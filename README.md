@@ -1,4 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wedding Invitation SaaS
+
+Mobile-first wedding invitation builder built with Next.js, Vercel, and Supabase.
+
+The app is structured around multiple invitation records. Each public invitation has a shareable slug, and each admin login uses a separate invitation-specific admin code.
+
+## Routes
+
+- Public invitation: `/w/[slug]`
+- Admin login: `/admin`
+- Invitation admin: `/admin/[slug]`
+
+## Current Admin Flow
+
+- Login with an admin code.
+- The code is hashed and matched against `invitations.admin_code_hash`.
+- The session stores the authorized invitation slug in an httpOnly cookie.
+- Admin mutations verify that the session slug matches the invitation being edited.
+- From an existing admin dashboard, create a new invitation by cloning the current invitation as a template.
+- New invitations start as `draft`.
+- Newly generated admin codes are shown once after creation and are not stored as plaintext.
 
 ## Getting Started
 
@@ -16,21 +36,34 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Useful local URLs:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [http://localhost:3000/w/jjym0818](http://localhost:3000/w/jjym0818)
+- [http://localhost:3000/admin](http://localhost:3000/admin)
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+See [docs/SETUP.md](docs/SETUP.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Required values:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+ADMIN_SESSION_SECRET=
+ADMIN_CODE_SECRET=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
 
-## Deploy on Vercel
+## Docs
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Roadmap](docs/ROADMAP.md)
+- [Setup](docs/SETUP.md)
+- [Data model](docs/DATA_MODEL.md)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verification
+
+```bash
+npm run lint
+npm run build
+```

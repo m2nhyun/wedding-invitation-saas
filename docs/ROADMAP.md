@@ -29,7 +29,8 @@ The first real customer is our own invitation. The system should still be shaped
 - httpOnly session cookie
 - Protected admin layout
 - Edit couple, wedding, copy, location, and account fields
-- Upload hero, gallery, timeline, location, and OG images
+- Upload hero, gallery, and section images through Supabase Storage
+- Create a new draft invitation from an existing invitation template
 
 Admin authentication routes each valid admin code to one invitation dashboard.
 
@@ -41,6 +42,7 @@ Target multi-invitation admin model:
 - Storage: hashed admin code per invitation, never plaintext
 - Session: stores the authorized invitation slug
 - Authorization: every admin mutation checks both session and invitation slug
+- Creation: new invitations get a generated admin code that is shown once
 
 ## Phase 4: Publishing Workflow
 
@@ -48,6 +50,7 @@ Target multi-invitation admin model:
 - Slug management
 - Preview URL
 - Open Graph metadata
+- Admin code reset/recovery flow
 - Vercel environment variable checklist
 
 ## Explicitly Deferred

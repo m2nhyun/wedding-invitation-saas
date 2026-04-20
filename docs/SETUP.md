@@ -18,7 +18,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 ## Supabase
 
 1. Create a Supabase project.
-2. Run `supabase/migrations/0001_initial_schema.sql` in SQL editor or through Supabase CLI.
+2. Run the migrations in `supabase/migrations` through Supabase CLI.
 3. Confirm the `wedding-media` Storage bucket exists and is public.
 4. Add the same env values to Vercel Project Settings.
 
@@ -30,5 +30,6 @@ The admin uses invitation-specific admin codes.
 - Dashboard: `/admin/[slug]`
 - Session: signed httpOnly cookie that stores the authorized invitation slug
 - Code lookup: HMAC-SHA256 hash stored in `invitations.admin_code_hash`
+- New invitation creation: clone an existing dashboard, generate a new admin code, and show it once
 
 Do not make the public slug and admin code identical. The public URL can be shared widely, while the admin code should be treated like a password.

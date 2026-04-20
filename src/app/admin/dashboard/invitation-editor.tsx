@@ -186,7 +186,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
         <input type="hidden" name="slug" value={invitation.slug} />
         <section className="border border-stone-200 bg-[#fffdf9] p-6">
           <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Media</p>
-          <h2 className="mt-3 font-serif text-3xl">이미지 URL 관리</h2>
+          <h2 className="mt-3 font-serif text-3xl">이미지 업로드 관리</h2>
           <p className="mt-4 text-sm leading-7 text-stone-600">
             업로드한 이미지는 Supabase Storage의 `wedding-media` bucket에 저장되고 공개 페이지에 즉시 반영됩니다.
           </p>

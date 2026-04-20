@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAdmin } from "@/app/admin/actions";
+import { CreateInvitationForm } from "@/app/admin/[slug]/create-invitation-form";
 import { InvitationEditor } from "@/app/admin/dashboard/invitation-editor";
 import { isAdminAuthenticated } from "@/lib/admin-session";
 import { getAdminInvitationBySlug } from "@/lib/invitations";
@@ -69,12 +70,14 @@ export default async function AdminInvitationPage({ params }: PageProps) {
           </article>
         </div>
 
+        <CreateInvitationForm sourceSlug={invitation.slug} canCreate={supabaseReady} />
+
         <InvitationEditor invitation={invitation} canSave={supabaseReady} />
 
         <section className="mt-8 bg-stone-950 p-6 text-white">
           <p className="font-serif text-2xl">다음 구현 순서</p>
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-7 text-stone-300">
-            <li>사진 업로드 UI와 Supabase Storage upload action을 연결합니다.</li>
+            <li>생성된 초대장의 관리자 코드를 재발급하는 안전한 복구 플로우를 추가합니다.</li>
             <li>계좌번호 편집 UI를 별도 반복 form으로 분리합니다.</li>
             <li>갤러리 순서 변경과 삭제 기능을 붙입니다.</li>
             <li>저장 후 공개 페이지 미리보기를 더 빠르게 확인할 수 있게 합니다.</li>

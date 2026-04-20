@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
@@ -17,6 +18,13 @@ export type AdminLoginState = {
 export type AdminSaveState = {
   error?: string;
   success?: string;
+};
+
+export type AdminCreateInvitationState = {
+  error?: string;
+  success?: string;
+  slug?: string;
+  adminCode?: string;
 };
 
 export async function loginAdmin(
@@ -61,6 +69,19 @@ function getRequiredFormValue(formData: FormData, key: string) {
   }
 
   return value;
+}
+
+function normalizeSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function createAdminCode(slug: string) {
+  return `${slug}-${randomBytes(4).toString("hex")}`;
 }
 
 async function requireAdminForMutation(slug: string) {
@@ -137,6 +158,179 @@ export async function saveInvitationDetails(
 
   return {
     success: "저장되었습니다.",
+  };
+}
+
+export async function createInvitation(
+  _previousState: AdminCreateInvitationState,
+  formData: FormData,
+): Promise<AdminCreateInvitationState> {
+  const sourceSlug = getRequiredFormValue(formData, "sourceSlug");
+  const authError = await requireAdminForMutation(sourceSlug);
+  if (authError) {
+    return authError;
+  }
+
+  if (!hasSupabaseConfig()) {
+    return {
+      error: "Supabase 환경변수가 없어 생성할 수 없습니다.",
+    };
+  }
+
+  const slug = normalizeSlug(getRequiredFormValue(formData, "newSlug"));
+  if (slug.length < 3) {
+    return {
+      error: "slug는 영문/숫자/하이픈으로 3자 이상이어야 합니다.",
+    };
+  }
+
+  const adminCode = createAdminCode(slug);
+  const adminCodeHash = hashAdminCode(adminCode);
+  const groomName = getRequiredFormValue(formData, "newGroomName");
+  const brideName = getRequiredFormValue(formData, "newBrideName");
+  const weddingDate = getRequiredFormValue(formData, "newWeddingDate");
+
+  const supabase = createSupabaseAdminClient();
+  const { data: source, error: sourceError } = await supabase
+    .from("invitations")
+    .select(
+      `
+        *,
+        invitation_media(type, public_url, storage_path, alt, sort_order),
+        invitation_accounts(side, role, name, bank, number, sort_order),
+        invitation_timeline_items(date_label, title, body, image_url, sort_order)
+      `,
+    )
+    .eq("slug", sourceSlug)
+    .single();
+
+  if (sourceError || !source) {
+    return {
+      error: sourceError?.message ?? "원본 초대장을 찾을 수 없습니다.",
+    };
+  }
+
+  const { data: created, error: insertError } = await supabase
+    .from("invitations")
+    .insert({
+      slug,
+      status: "draft",
+      admin_code_hash: adminCodeHash,
+      groom_name: groomName,
+      groom_name_en: groomName,
+      groom_father: source.groom_father ?? "",
+      groom_mother: source.groom_mother ?? "",
+      bride_name: brideName,
+      bride_name_en: brideName,
+      bride_father: source.bride_father ?? "",
+      bride_mother: source.bride_mother ?? "",
+      wedding_date: weddingDate,
+      wedding_time: source.wedding_time ?? "12:00",
+      venue: source.venue ?? "예식장명을 입력해주세요",
+      hall: source.hall ?? "",
+      address: source.address ?? "",
+      tel: source.tel ?? "",
+      kakao_map_url: source.kakao_map_url ?? "#",
+      naver_map_url: source.naver_map_url ?? "#",
+      tmap_url: source.tmap_url ?? "#",
+      copy: source.copy,
+      profiles: source.profiles,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (insertError || !created) {
+    return {
+      error: insertError?.message ?? "초대장을 생성하지 못했습니다.",
+    };
+  }
+
+  const mediaRows = (source.invitation_media ?? []).map(
+    (media: {
+      type: string;
+      public_url: string;
+      storage_path: string;
+      alt: string | null;
+      sort_order: number;
+    }) => ({
+      invitation_id: created.id,
+      type: media.type,
+      public_url: media.public_url,
+      storage_path: media.storage_path,
+      alt: media.alt,
+      sort_order: media.sort_order,
+    }),
+  );
+
+  if (mediaRows.length > 0) {
+    const { error } = await supabase.from("invitation_media").insert(mediaRows);
+    if (error) {
+      return {
+        error: error.message,
+      };
+    }
+  }
+
+  const accountRows = (source.invitation_accounts ?? []).map(
+    (account: {
+      side: "groom" | "bride";
+      role: string;
+      name: string;
+      bank: string;
+      number: string;
+      sort_order: number;
+    }) => ({
+      invitation_id: created.id,
+      side: account.side,
+      role: account.role,
+      name: account.name,
+      bank: account.bank,
+      number: account.number,
+      sort_order: account.sort_order,
+    }),
+  );
+
+  if (accountRows.length > 0) {
+    const { error } = await supabase.from("invitation_accounts").insert(accountRows);
+    if (error) {
+      return {
+        error: error.message,
+      };
+    }
+  }
+
+  const timelineRows = (source.invitation_timeline_items ?? []).map(
+    (item: {
+      date_label: string | null;
+      title: string;
+      body: string | null;
+      image_url: string | null;
+      sort_order: number;
+    }) => ({
+      invitation_id: created.id,
+      date_label: item.date_label,
+      title: item.title,
+      body: item.body,
+      image_url: item.image_url,
+      sort_order: item.sort_order,
+    }),
+  );
+
+  if (timelineRows.length > 0) {
+    const { error } = await supabase.from("invitation_timeline_items").insert(timelineRows);
+    if (error) {
+      return {
+        error: error.message,
+      };
+    }
+  }
+
+  revalidatePath(`/admin/${sourceSlug}`);
+
+  return {
+    success: "새 초대장이 생성되었습니다. 관리자 코드는 지금만 표시됩니다.",
+    slug,
+    adminCode,
   };
 }
 

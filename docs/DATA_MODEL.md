@@ -26,6 +26,7 @@ This is the target Supabase model. The current implementation uses `src/lib/mock
 - `tmap_url text`
 - `copy jsonb not null default '{}'`
 - `profiles jsonb not null default '{}'`
+- `admin_code_hash text unique`
 - `created_at timestamptz default now()`
 - `updated_at timestamptz default now()`
 
