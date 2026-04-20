@@ -9,51 +9,75 @@ function getSessionSecret() {
   return getOptionalEnv("ADMIN_SESSION_SECRET") ?? "local-development-session-secret-change-me";
 }
 
+function getAdminCodeSecret() {
+  return getOptionalEnv("ADMIN_CODE_SECRET") ?? getSessionSecret();
+}
+
 function sign(value: string) {
   return createHmac("sha256", getSessionSecret()).update(value).digest("base64url");
 }
 
-function createSessionValue() {
+export function hashAdminCode(code: string) {
+  return createHmac("sha256", getAdminCodeSecret()).update(code.trim()).digest("hex");
+}
+
+function createSessionValue(slug: string) {
   const issuedAt = Date.now().toString();
-  return `${issuedAt}.${sign(issuedAt)}`;
+  const payload = `${issuedAt}.${slug}`;
+  return `${payload}.${sign(payload)}`;
 }
 
 function verifySessionValue(value: string) {
-  const [issuedAt, signature] = value.split(".");
+  const [issuedAt, slug, signature] = value.split(".");
 
-  if (!issuedAt || !signature) {
-    return false;
+  if (!issuedAt || !slug || !signature) {
+    return undefined;
   }
 
   const issuedAtNumber = Number(issuedAt);
   if (!Number.isFinite(issuedAtNumber)) {
-    return false;
+    return undefined;
   }
 
   if (Date.now() - issuedAtNumber > SESSION_MAX_AGE_SECONDS * 1000) {
-    return false;
+    return undefined;
   }
 
-  const expected = sign(issuedAt);
+  const payload = `${issuedAt}.${slug}`;
+  const expected = sign(payload);
   const expectedBuffer = Buffer.from(expected);
   const signatureBuffer = Buffer.from(signature);
 
-  return (
-    expectedBuffer.length === signatureBuffer.length &&
-    timingSafeEqual(expectedBuffer, signatureBuffer)
-  );
+  if (
+    expectedBuffer.length !== signatureBuffer.length ||
+    !timingSafeEqual(expectedBuffer, signatureBuffer)
+  ) {
+    return undefined;
+  }
+
+  return slug;
 }
 
-export async function isAdminAuthenticated() {
+export async function getAdminSessionSlug() {
   const cookieStore = await cookies();
   const session = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
 
-  return session ? verifySessionValue(session) : false;
+  return session ? verifySessionValue(session) : undefined;
 }
 
-export async function setAdminSession() {
+export async function isAdminAuthenticated(slug?: string) {
+  const sessionSlug = await getAdminSessionSlug();
+
+  if (!sessionSlug) {
+    return false;
+  }
+
+  return slug ? sessionSlug === slug : true;
+}
+
+export async function setAdminSession(slug: string) {
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_SESSION_COOKIE, createSessionValue(), {
+  cookieStore.set(ADMIN_SESSION_COOKIE, createSessionValue(slug), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -65,9 +89,4 @@ export async function setAdminSession() {
 export async function clearAdminSession() {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_SESSION_COOKIE);
-}
-
-export function verifyAdminPassword(password: string) {
-  const configuredPassword = getOptionalEnv("ADMIN_PASSWORD") ?? "jjym0818";
-  return password === configuredPassword;
 }

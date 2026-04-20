@@ -25,13 +25,13 @@ The first real customer is our own invitation. The system should still be shaped
 
 ## Phase 3: Admin Editing
 
-- `ADMIN_PASSWORD` based login
+- Invitation-specific admin code login
 - httpOnly session cookie
 - Protected admin layout
 - Edit couple, wedding, copy, location, and account fields
 - Upload hero, gallery, timeline, location, and OG images
 
-Current admin authentication is a single global password for the whole app. It does not yet route different passwords to different invitations.
+Admin authentication routes each valid admin code to one invitation dashboard.
 
 Target multi-invitation admin model:
 

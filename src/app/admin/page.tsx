@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/app/admin/login-form";
-import { isAdminAuthenticated } from "@/lib/admin-session";
+import { getAdminSessionSlug } from "@/lib/admin-session";
 
 const adminModules = [
   {
@@ -27,8 +27,9 @@ const adminModules = [
 ];
 
 export default async function AdminPage() {
-  if (await isAdminAuthenticated()) {
-    redirect("/admin/dashboard");
+  const sessionSlug = await getAdminSessionSlug();
+  if (sessionSlug) {
+    redirect(`/admin/${sessionSlug}`);
   }
 
   return (
@@ -43,8 +44,8 @@ export default async function AdminPage() {
               운영하는 공간
             </h1>
             <p className="mt-7 text-sm leading-8 text-stone-600">
-              지금은 관리자 진입 화면의 1차 골격입니다. 다음 단계에서 환경변수 기반 비밀번호와
-              httpOnly 쿠키 세션을 연결합니다.
+              초대장별 관리자 코드를 입력하면 해당 초대장의 관리 화면으로 이동합니다. 코드는 URL과
+              분리되어 저장되며, 세션은 httpOnly 쿠키로 관리됩니다.
             </p>
           </div>
 

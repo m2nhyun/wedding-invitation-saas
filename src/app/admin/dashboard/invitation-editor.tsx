@@ -63,6 +63,40 @@ function TextArea({
   );
 }
 
+function ImageUploadField({
+  label,
+  fileName,
+  currentName,
+  currentUrl,
+}: {
+  label: string;
+  fileName: string;
+  currentName: string;
+  currentUrl: string;
+}) {
+  return (
+    <div className="border border-stone-200 bg-white p-4">
+      <input type="hidden" name={currentName} value={currentUrl} />
+      <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+        {currentUrl ? (
+          <img src={currentUrl} alt={label} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-sm text-stone-400">이미지 없음</div>
+        )}
+      </div>
+      <label className="mt-4 block">
+        <span className="text-sm font-medium text-stone-700">{label}</span>
+        <input
+          name={fileName}
+          type="file"
+          accept="image/*"
+          className="mt-2 block w-full text-sm text-stone-600 file:mr-4 file:h-10 file:border-0 file:bg-stone-950 file:px-4 file:text-sm file:text-white"
+        />
+      </label>
+    </div>
+  );
+}
+
 export function InvitationEditor({ invitation, canSave }: Props) {
   const [detailsState, detailsFormAction, detailsIsPending] = useActionState(saveInvitationDetails, initialState);
   const [assetsState, assetsFormAction, assetsIsPending] = useActionState(saveInvitationAssets, initialState);
@@ -154,23 +188,23 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Media</p>
           <h2 className="mt-3 font-serif text-3xl">이미지 URL 관리</h2>
           <p className="mt-4 text-sm leading-7 text-stone-600">
-            지금은 URL 기반 관리입니다. 다음 단계에서 파일 업로드와 Supabase Storage 저장을 연결합니다.
+            업로드한 이미지는 Supabase Storage의 `wedding-media` bucket에 저장되고 공개 페이지에 즉시 반영됩니다.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <Field label="히어로 이미지 URL" name="heroUrl" defaultValue={invitation.images.hero} />
-            <Field label="인트로 이미지 URL" name="introUrl" defaultValue={invitation.images.intro} />
-            <Field label="인용문 이미지 URL" name="quoteUrl" defaultValue={invitation.images.quote} />
-            <Field label="예식 안내 이미지 URL" name="calendarUrl" defaultValue={invitation.images.calendar} />
-            <Field label="마무리 이미지 URL" name="closingUrl" defaultValue={invitation.images.closing} />
+            <ImageUploadField label="히어로 이미지" fileName="heroFile" currentName="heroCurrentUrl" currentUrl={invitation.images.hero} />
+            <ImageUploadField label="인트로 이미지" fileName="introFile" currentName="introCurrentUrl" currentUrl={invitation.images.intro} />
+            <ImageUploadField label="인용문 이미지" fileName="quoteFile" currentName="quoteCurrentUrl" currentUrl={invitation.images.quote} />
+            <ImageUploadField label="예식 안내 이미지" fileName="calendarFile" currentName="calendarCurrentUrl" currentUrl={invitation.images.calendar} />
+            <ImageUploadField label="마무리 이미지" fileName="closingFile" currentName="closingCurrentUrl" currentUrl={invitation.images.closing} />
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {Array.from({ length: 8 }, (_, index) => (
-              <Field
+              <ImageUploadField
                 key={index}
-                label={`갤러리 ${index + 1} URL`}
-                name={`galleryUrl${index + 1}`}
-                defaultValue={invitation.gallery[index]?.src ?? ""}
-                required={false}
+                label={`갤러리 ${index + 1}`}
+                fileName={`galleryFile${index + 1}`}
+                currentName={`galleryCurrentUrl${index + 1}`}
+                currentUrl={invitation.gallery[index]?.src ?? ""}
               />
             ))}
           </div>

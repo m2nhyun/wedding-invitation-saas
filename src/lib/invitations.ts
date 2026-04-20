@@ -5,6 +5,7 @@ import { createSupabaseBrowserClient, hasSupabaseConfig } from "@/lib/supabase/s
 export type InvitationRow = {
   id: string;
   slug: string;
+  admin_code_hash?: string | null;
   status: WeddingInvitation["status"];
   groom_name: string;
   groom_name_en: string | null;

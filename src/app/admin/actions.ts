@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
   clearAdminSession,
+  hashAdminCode,
   isAdminAuthenticated,
   setAdminSession,
-  verifyAdminPassword,
 } from "@/lib/admin-session";
 import { createSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase/server";
 
@@ -23,16 +23,29 @@ export async function loginAdmin(
   _previousState: AdminLoginState,
   formData: FormData,
 ): Promise<AdminLoginState> {
-  const password = String(formData.get("password") ?? "");
-
-  if (!verifyAdminPassword(password)) {
+  if (!hasSupabaseConfig()) {
     return {
-      error: "비밀번호가 올바르지 않습니다.",
+      error: "Supabase 환경변수가 없어 로그인할 수 없습니다.",
     };
   }
 
-  await setAdminSession();
-  redirect("/admin/dashboard");
+  const adminCode = String(formData.get("password") ?? "").trim();
+  const adminCodeHash = hashAdminCode(adminCode);
+  const supabase = createSupabaseAdminClient();
+  const { data: invitation, error } = await supabase
+    .from("invitations")
+    .select("slug")
+    .eq("admin_code_hash", adminCodeHash)
+    .single<{ slug: string }>();
+
+  if (error || !invitation) {
+    return {
+      error: "관리자 코드가 올바르지 않습니다.",
+    };
+  }
+
+  await setAdminSession(invitation.slug);
+  redirect(`/admin/${invitation.slug}`);
 }
 
 export async function logoutAdmin() {
@@ -50,8 +63,8 @@ function getRequiredFormValue(formData: FormData, key: string) {
   return value;
 }
 
-async function requireAdminForMutation() {
-  if (!(await isAdminAuthenticated())) {
+async function requireAdminForMutation(slug: string) {
+  if (!(await isAdminAuthenticated(slug))) {
     return {
       error: "관리자 로그인이 필요합니다.",
     };
@@ -64,7 +77,8 @@ export async function saveInvitationDetails(
   _previousState: AdminSaveState,
   formData: FormData,
 ): Promise<AdminSaveState> {
-  const authError = await requireAdminForMutation();
+  const slug = getRequiredFormValue(formData, "slug");
+  const authError = await requireAdminForMutation(slug);
   if (authError) {
     return authError;
   }
@@ -74,8 +88,6 @@ export async function saveInvitationDetails(
       error: "Supabase 환경변수가 없어 저장할 수 없습니다.",
     };
   }
-
-  const slug = getRequiredFormValue(formData, "slug");
 
   const payload = {
     status: getRequiredFormValue(formData, "status"),
@@ -121,7 +133,7 @@ export async function saveInvitationDetails(
   }
 
   revalidatePath(`/w/${slug}`);
-  revalidatePath("/admin/dashboard");
+  revalidatePath(`/admin/${slug}`);
 
   return {
     success: "저장되었습니다.",
@@ -137,7 +149,8 @@ export async function saveInvitationAssets(
   _previousState: AdminSaveState,
   formData: FormData,
 ): Promise<AdminSaveState> {
-  const authError = await requireAdminForMutation();
+  const slug = getRequiredFormValue(formData, "slug");
+  const authError = await requireAdminForMutation(slug);
   if (authError) {
     return authError;
   }
@@ -148,7 +161,6 @@ export async function saveInvitationAssets(
     };
   }
 
-  const slug = getRequiredFormValue(formData, "slug");
   const supabase = createSupabaseAdminClient();
   const { data: invitation, error: invitationError } = await supabase
     .from("invitations")
@@ -164,41 +176,77 @@ export async function saveInvitationAssets(
 
   const mediaInputs: Array<{
     type: string;
-    key: string;
+    fileKey: string;
+    currentKey: string;
     alt: string;
     sortOrder: number;
   }> = [
-    { type: "hero", key: "heroUrl", alt: "히어로 이미지", sortOrder: 0 },
-    { type: "intro", key: "introUrl", alt: "인트로 이미지", sortOrder: 0 },
-    { type: "quote", key: "quoteUrl", alt: "인용문 이미지", sortOrder: 0 },
-    { type: "calendar", key: "calendarUrl", alt: "예식 안내 이미지", sortOrder: 0 },
-    { type: "closing", key: "closingUrl", alt: "마무리 이미지", sortOrder: 0 },
+    { type: "hero", fileKey: "heroFile", currentKey: "heroCurrentUrl", alt: "히어로 이미지", sortOrder: 0 },
+    { type: "intro", fileKey: "introFile", currentKey: "introCurrentUrl", alt: "인트로 이미지", sortOrder: 0 },
+    { type: "quote", fileKey: "quoteFile", currentKey: "quoteCurrentUrl", alt: "인용문 이미지", sortOrder: 0 },
+    {
+      type: "calendar",
+      fileKey: "calendarFile",
+      currentKey: "calendarCurrentUrl",
+      alt: "예식 안내 이미지",
+      sortOrder: 0,
+    },
+    {
+      type: "closing",
+      fileKey: "closingFile",
+      currentKey: "closingCurrentUrl",
+      alt: "마무리 이미지",
+      sortOrder: 0,
+    },
     ...Array.from({ length: 8 }, (_, index) => ({
       type: "gallery",
-      key: `galleryUrl${index + 1}`,
+      fileKey: `galleryFile${index + 1}`,
+      currentKey: `galleryCurrentUrl${index + 1}`,
       alt: `웨딩 갤러리 사진 ${index + 1}`,
       sortOrder: index + 1,
     })),
   ];
 
-  const mediaRows = mediaInputs
-    .map(({ type, key, alt, sortOrder }) => {
-      const publicUrl = getOptionalFormValue(formData, key);
+  const mediaRows = (
+    await Promise.all(
+      mediaInputs.map(async ({ type, fileKey, currentKey, alt, sortOrder }) => {
+        const file = formData.get(fileKey);
+        const currentUrl = getOptionalFormValue(formData, currentKey);
+        let publicUrl = currentUrl;
+        let storagePath = currentUrl?.startsWith("http") ? `external/${type}-${sortOrder}.jpg` : currentUrl;
 
-      if (!publicUrl) {
-        return undefined;
-      }
+        if (file instanceof File && file.size > 0) {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+          storagePath = `invitations/${invitation.id}/${type}/${Date.now()}-${sortOrder}-${safeName}`;
+          const { error: uploadError } = await supabase.storage
+            .from("wedding-media")
+            .upload(storagePath, file, {
+              upsert: true,
+              contentType: file.type || "application/octet-stream",
+            });
 
-      return {
-        invitation_id: invitation.id,
-        type,
-        public_url: publicUrl,
-        storage_path: publicUrl.startsWith("http") ? `external/${type}-${sortOrder}.jpg` : publicUrl,
-        alt,
-        sort_order: sortOrder,
-      };
-    })
-    .filter((row) => Boolean(row));
+          if (uploadError) {
+            throw new Error(uploadError.message);
+          }
+
+          publicUrl = supabase.storage.from("wedding-media").getPublicUrl(storagePath).data.publicUrl;
+        }
+
+        if (!publicUrl || !storagePath) {
+          return undefined;
+        }
+
+        return {
+          invitation_id: invitation.id,
+          type,
+          public_url: publicUrl,
+          storage_path: storagePath,
+          alt,
+          sort_order: sortOrder,
+        };
+      }),
+    )
+  ).filter((row) => Boolean(row));
 
   const accountRows = Array.from({ length: 6 }, (_, index) => {
     const slot = index + 1;
@@ -266,7 +314,7 @@ export async function saveInvitationAssets(
   }
 
   revalidatePath(`/w/${slug}`);
-  revalidatePath("/admin/dashboard");
+  revalidatePath(`/admin/${slug}`);
 
   return {
     success: "이미지와 계좌 정보가 저장되었습니다.",

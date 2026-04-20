@@ -5,8 +5,8 @@
 Create `.env.local` from `.env.example`.
 
 ```bash
-ADMIN_PASSWORD=jjym0818
 ADMIN_SESSION_SECRET=replace-with-at-least-32-random-characters
+ADMIN_CODE_SECRET=replace-with-at-least-32-random-characters
 
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
@@ -24,12 +24,11 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Admin
 
-The first admin version uses a single password from `ADMIN_PASSWORD`.
+The admin uses invitation-specific admin codes.
 
 - Login page: `/admin`
-- Dashboard: `/admin/dashboard`
-- Session: signed httpOnly cookie
+- Dashboard: `/admin/[slug]`
+- Session: signed httpOnly cookie that stores the authorized invitation slug
+- Code lookup: HMAC-SHA256 hash stored in `invitations.admin_code_hash`
 
-This can later be replaced by Supabase Auth without changing the public invitation route.
-
-Important: different passwords do not yet map to different invitation dashboards. The current password is global for the deployed app. The intended SaaS version should move to `/admin/[slug]` and store a hashed invitation-specific admin code.
+Do not make the public slug and admin code identical. The public URL can be shared widely, while the admin code should be treated like a password.
