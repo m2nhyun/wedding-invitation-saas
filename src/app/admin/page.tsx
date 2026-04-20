@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { AdminLoginForm } from "@/app/admin/login-form";
+import { isAdminAuthenticated } from "@/lib/admin-session";
 
 const adminModules = [
   {
@@ -23,7 +26,11 @@ const adminModules = [
   },
 ];
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  if (await isAdminAuthenticated()) {
+    redirect("/admin/dashboard");
+  }
+
   return (
     <main className="min-h-screen bg-stone-950 px-5 py-8 text-white">
       <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl gap-6 lg:grid-cols-[420px_1fr]">
@@ -41,24 +48,7 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <form className="mt-10 space-y-4">
-            <label className="block text-sm font-medium" htmlFor="admin-password">
-              관리자 비밀번호
-            </label>
-            <input
-              id="admin-password"
-              name="password"
-              type="password"
-              placeholder="ADMIN_PASSWORD"
-              className="h-12 w-full border border-stone-300 bg-white px-4 text-sm outline-none transition focus:border-stone-950"
-            />
-            <button
-              type="button"
-              className="h-12 w-full bg-stone-950 text-sm font-medium tracking-[0.16em] text-white"
-            >
-              로그인 준비 중
-            </button>
-          </form>
+          <AdminLoginForm />
         </div>
 
         <div className="bg-[#fffdf9] p-8 text-stone-950">
