@@ -243,42 +243,6 @@ export async function saveInvitationDetails(
   };
 }
 
-export async function createInvitation(
-  _previousState: AdminCreateInvitationState,
-  formData: FormData,
-): Promise<AdminCreateInvitationState> {
-  const sourceSlug = getRequiredFormValue(formData, "sourceSlug");
-  const authError = await requireAdminForMutation(sourceSlug);
-  if (authError) {
-    return authError;
-  }
-
-  if (!hasSupabaseConfig()) {
-    return {
-      error: "Supabase 환경변수가 없어 생성할 수 없습니다.",
-    };
-  }
-
-  const slug = normalizeSlug(getRequiredFormValue(formData, "newSlug"));
-  if (slug.length < 3) {
-    return {
-      error: "slug는 영문/숫자/하이픈으로 3자 이상이어야 합니다.",
-    };
-  }
-
-  const groomName = getRequiredFormValue(formData, "newGroomName");
-  const brideName = getRequiredFormValue(formData, "newBrideName");
-  const weddingDate = getRequiredFormValue(formData, "newWeddingDate");
-
-  return cloneInvitationFromTemplate({
-    sourceSlug,
-    slug,
-    groomName,
-    brideName,
-    weddingDate,
-  });
-}
-
 async function cloneInvitationFromTemplate({
   sourceSlug,
   slug,

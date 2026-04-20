@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAdmin } from "@/app/admin/actions";
-import { CreateInvitationForm } from "@/app/admin/[slug]/create-invitation-form";
 import { InvitationEditor } from "@/app/admin/dashboard/invitation-editor";
 import { isAdminAuthenticated } from "@/lib/admin-session";
 import { getAdminInvitationBySlug } from "@/lib/invitations";
@@ -69,8 +68,6 @@ export default async function AdminInvitationPage({ params }: PageProps) {
             <p className="mt-3 font-serif text-3xl">wedding-media</p>
           </article>
         </div>
-
-        <CreateInvitationForm sourceSlug={invitation.slug} canCreate={supabaseReady} />
 
         <InvitationEditor invitation={invitation} canSave={supabaseReady} />
 
