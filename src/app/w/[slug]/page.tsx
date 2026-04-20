@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InvitationExperience } from "@/components/invitation/invitation-experience";
-import { getInvitationBySlug, invitations } from "@/lib/mock-data";
+import { getInvitationBySlug, getStaticInvitationParams } from "@/lib/invitations";
 
 type PageProps = {
   params: Promise<{
@@ -10,14 +10,12 @@ type PageProps = {
 };
 
 export function generateStaticParams() {
-  return invitations.map((invitation) => ({
-    slug: invitation.slug,
-  }));
+  return getStaticInvitationParams();
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const invitation = getInvitationBySlug(slug);
+  const invitation = await getInvitationBySlug(slug);
 
   if (!invitation) {
     return {
@@ -49,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function WeddingInvitationPage({ params }: PageProps) {
   const { slug } = await params;
-  const invitation = getInvitationBySlug(slug);
+  const invitation = await getInvitationBySlug(slug);
 
   if (!invitation || invitation.status !== "published") {
     notFound();
