@@ -1,36 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAdmin } from "@/app/admin/actions";
+import { InvitationEditor } from "@/app/admin/dashboard/invitation-editor";
 import { isAdminAuthenticated } from "@/lib/admin-session";
+import { getAdminInvitationBySlug } from "@/lib/invitations";
 import { getPrimaryInvitation } from "@/lib/mock-data";
 import { hasSupabaseConfig } from "@/lib/supabase/server";
-
-const editorSections = [
-  {
-    title: "기본 정보",
-    fields: ["slug", "공개 상태", "신랑·신부 이름", "부모님 성함"],
-  },
-  {
-    title: "예식 정보",
-    fields: ["날짜", "시간", "장소", "홀", "주소", "지도 링크"],
-  },
-  {
-    title: "문구",
-    fields: ["초대 문구", "인용문", "스토리", "오시는 길 안내", "마무리 문구"],
-  },
-  {
-    title: "미디어",
-    fields: ["히어로", "인트로", "갤러리", "타임라인", "OG 이미지"],
-  },
-];
 
 export default async function AdminDashboardPage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin");
   }
 
-  const invitation = getPrimaryInvitation();
   const supabaseReady = hasSupabaseConfig();
+  const invitation = (await getAdminInvitationBySlug(getPrimaryInvitation().slug)) ?? getPrimaryInvitation();
 
   return (
     <main className="min-h-screen bg-[#f4efe7] px-5 py-6 text-stone-950">
@@ -75,34 +58,15 @@ export default async function AdminDashboardPage() {
           </article>
         </div>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2">
-          {editorSections.map((section) => (
-            <article key={section.title} className="border border-stone-200 bg-[#fffdf9] p-6">
-              <h2 className="font-serif text-2xl">{section.title}</h2>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {section.fields.map((field) => (
-                  <span key={field} className="border border-stone-200 bg-white px-3 py-2 text-sm text-stone-600">
-                    {field}
-                  </span>
-                ))}
-              </div>
-              <button
-                type="button"
-                className="mt-6 h-11 w-full border border-dashed border-stone-300 text-sm text-stone-500"
-              >
-                편집 UI 연결 예정
-              </button>
-            </article>
-          ))}
-        </section>
+        <InvitationEditor invitation={invitation} canSave={supabaseReady} />
 
         <section className="mt-8 bg-stone-950 p-6 text-white">
           <p className="font-serif text-2xl">다음 구현 순서</p>
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-7 text-stone-300">
-            <li>Supabase 프로젝트 env를 Vercel과 로컬에 등록합니다.</li>
-            <li>마이그레이션 SQL로 테이블과 Storage bucket을 생성합니다.</li>
-            <li>mock 데이터를 seed로 넣고 `/w/[slug]`를 Supabase read로 전환합니다.</li>
-            <li>이 dashboard 카드들을 실제 form editor로 바꿉니다.</li>
+            <li>사진 업로드 UI와 Supabase Storage upload action을 연결합니다.</li>
+            <li>계좌번호 편집 UI를 별도 반복 form으로 분리합니다.</li>
+            <li>갤러리 순서 변경과 삭제 기능을 붙입니다.</li>
+            <li>저장 후 공개 페이지 미리보기를 더 빠르게 확인할 수 있게 합니다.</li>
           </ol>
         </section>
       </section>

@@ -9,6 +9,8 @@ type PageProps = {
   }>;
 };
 
+export const revalidate = 0;
+
 export function generateStaticParams() {
   return getStaticInvitationParams();
 }

@@ -2,7 +2,7 @@ import type { WeddingAccount, WeddingGalleryImage, WeddingInvitation, WeddingTim
 import { getInvitationBySlug as getMockInvitationBySlug, getPrimaryInvitation, invitations } from "@/lib/mock-data";
 import { createSupabaseBrowserClient, hasSupabaseConfig } from "@/lib/supabase/server";
 
-type InvitationRow = {
+export type InvitationRow = {
   id: string;
   slug: string;
   status: WeddingInvitation["status"];
@@ -58,7 +58,7 @@ function getMediaUrl(media: InvitationRow["invitation_media"], type: string, fal
   );
 }
 
-function mapInvitationRow(row: InvitationRow): WeddingInvitation {
+export function mapInvitationRow(row: InvitationRow): WeddingInvitation {
   const media = row.invitation_media ?? [];
   const gallery: WeddingGalleryImage[] = media
     .filter((item) => item.type === "gallery")
@@ -154,6 +154,32 @@ export async function getInvitationBySlug(slug: string) {
     )
     .eq("slug", slug)
     .eq("status", "published")
+    .single<InvitationRow>();
+
+  if (error || !data) {
+    return undefined;
+  }
+
+  return mapInvitationRow(data);
+}
+
+export async function getAdminInvitationBySlug(slug: string) {
+  if (!hasSupabaseConfig()) {
+    return getMockInvitationBySlug(slug);
+  }
+
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("invitations")
+    .select(
+      `
+        *,
+        invitation_media(type, public_url, alt, sort_order),
+        invitation_accounts(side, role, name, bank, number, sort_order),
+        invitation_timeline_items(date_label, title, body, image_url, sort_order)
+      `,
+    )
+    .eq("slug", slug)
     .single<InvitationRow>();
 
   if (error || !data) {
