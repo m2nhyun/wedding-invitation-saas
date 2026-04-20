@@ -21,6 +21,7 @@ The app is structured around multiple invitation records. Each public invitation
 - New invitations start as `draft`.
 - Newly generated admin codes are shown once after creation and are not stored as plaintext.
 - Super admin can create invitations from a template, list invitations, toggle publish state, and reset an invitation admin code.
+- Super admin operations are recorded in `admin_audit_logs` without storing plaintext admin codes.
 
 ## Getting Started
 

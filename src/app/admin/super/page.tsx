@@ -15,6 +15,15 @@ type InvitationSummary = {
   updated_at: string;
 };
 
+export type AdminAuditLogSummary = {
+  id: string;
+  actor: string;
+  action: string;
+  invitation_slug: string | null;
+  metadata: Record<string, string | number | boolean | null>;
+  created_at: string;
+};
+
 async function getInvitationSummaries() {
   if (!hasSupabaseConfig()) {
     return [];
@@ -34,9 +43,30 @@ async function getInvitationSummaries() {
   return data;
 }
 
+async function getAdminAuditLogs() {
+  if (!hasSupabaseConfig()) {
+    return [];
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("admin_audit_logs")
+    .select("id, actor, action, invitation_slug, metadata, created_at")
+    .order("created_at", { ascending: false })
+    .limit(12)
+    .returns<AdminAuditLogSummary[]>();
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data;
+}
+
 export default async function SuperAdminPage() {
   const isAuthenticated = await isSuperAdminAuthenticated();
   const invitations = isAuthenticated ? await getInvitationSummaries() : [];
+  const auditLogs = isAuthenticated ? await getAdminAuditLogs() : [];
 
   return (
     <main className="min-h-screen bg-[#f4efe7] px-5 py-6 text-stone-950">
@@ -64,7 +94,7 @@ export default async function SuperAdminPage() {
         </header>
 
         {isAuthenticated ? (
-          <SuperAdminConsole invitations={invitations} />
+          <SuperAdminConsole auditLogs={auditLogs} invitations={invitations} />
         ) : (
           <section className="mt-8 max-w-lg border border-stone-200 bg-[#fffdf9] p-6">
             <h2 className="font-serif text-3xl">슈퍼 관리자 로그인</h2>

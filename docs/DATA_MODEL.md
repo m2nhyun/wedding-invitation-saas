@@ -73,6 +73,22 @@ Media types:
 - `image_url text`
 - `sort_order int default 0`
 
+## admin_audit_logs
+
+- `id uuid primary key`
+- `actor text not null`
+- `action text not null`
+- `invitation_id uuid references invitations(id) on delete set null`
+- `invitation_slug text`
+- `metadata jsonb not null default '{}'`
+- `created_at timestamptz default now()`
+
+Current action values:
+
+- `invitation.created`
+- `invitation.status_updated`
+- `admin_code.reset`
+
 ## Storage
 
 Bucket: `wedding-media`

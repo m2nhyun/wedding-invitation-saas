@@ -9,6 +9,7 @@ import {
   type SuperAdminStatusState,
   updateInvitationStatus,
 } from "@/app/admin/actions";
+import type { AdminAuditLogSummary } from "@/app/admin/super/page";
 
 type InvitationSummary = {
   slug: string;
@@ -21,6 +22,7 @@ type InvitationSummary = {
 };
 
 type Props = {
+  auditLogs: AdminAuditLogSummary[];
   invitations: InvitationSummary[];
 };
 
@@ -28,7 +30,33 @@ const initialState: SuperAdminResetCodeState = {};
 const initialStatusState: SuperAdminStatusState = {};
 const initialCreateState: SuperAdminCreateInvitationState = {};
 
-export function SuperAdminConsole({ invitations }: Props) {
+const actionLabels: Record<string, string> = {
+  "admin_code.reset": "관리자 코드 재발급",
+  "invitation.created": "초대장 생성",
+  "invitation.status_updated": "공개 상태 변경",
+};
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Seoul",
+  }).format(new Date(value));
+}
+
+function getLogDetail(log: AdminAuditLogSummary) {
+  if (log.action === "invitation.created" && typeof log.metadata.sourceSlug === "string") {
+    return `템플릿 ${log.metadata.sourceSlug}`;
+  }
+
+  if (log.action === "invitation.status_updated" && typeof log.metadata.status === "string") {
+    return log.metadata.status === "published" ? "공개로 변경" : "비공개로 변경";
+  }
+
+  return "";
+}
+
+export function SuperAdminConsole({ auditLogs, invitations }: Props) {
   const [resetState, resetFormAction, resetIsPending] = useActionState(resetInvitationAdminCode, initialState);
   const [statusState, statusFormAction, statusIsPending] = useActionState(updateInvitationStatus, initialStatusState);
   const [createState, createFormAction, createIsPending] = useActionState(
@@ -229,7 +257,50 @@ export function SuperAdminConsole({ invitations }: Props) {
           </tbody>
         </table>
       </div>
-    </section>
+      </section>
+
+      <section className="border border-stone-200 bg-[#fffdf9] p-6">
+        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Audit</p>
+            <h2 className="mt-3 font-serif text-3xl">최근 운영 로그</h2>
+          </div>
+          <p className="text-sm text-stone-500">최근 {auditLogs.length}건</p>
+        </div>
+
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-stone-200 text-xs uppercase tracking-[0.18em] text-stone-400">
+                <th className="py-3 pr-4 font-medium">Time</th>
+                <th className="py-3 pr-4 font-medium">Action</th>
+                <th className="py-3 pr-4 font-medium">Slug</th>
+                <th className="py-3 pr-4 font-medium">Detail</th>
+                <th className="py-3 font-medium">Actor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.length > 0 ? (
+                auditLogs.map((log) => (
+                  <tr key={log.id} className="border-b border-stone-200">
+                    <td className="py-4 pr-4 text-xs text-stone-500">{formatDateTime(log.created_at)}</td>
+                    <td className="py-4 pr-4">{actionLabels[log.action] ?? log.action}</td>
+                    <td className="py-4 pr-4 font-mono text-xs">{log.invitation_slug ?? "-"}</td>
+                    <td className="py-4 pr-4 text-stone-600">{getLogDetail(log) || "-"}</td>
+                    <td className="py-4 font-mono text-xs text-stone-500">{log.actor}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="border-b border-stone-200">
+                  <td colSpan={5} className="py-6 text-center text-sm text-stone-500">
+                    아직 기록된 운영 로그가 없습니다.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

@@ -141,6 +141,31 @@ function createAdminCode(slug: string) {
   return `${slug}-${randomBytes(4).toString("hex")}`;
 }
 
+async function recordAdminAuditLog({
+  action,
+  invitationId,
+  invitationSlug,
+  metadata = {},
+}: {
+  action: string;
+  invitationId?: string;
+  invitationSlug?: string;
+  metadata?: Record<string, string | number | boolean | null>;
+}) {
+  try {
+    const supabase = createSupabaseAdminClient();
+    await supabase.from("admin_audit_logs").insert({
+      actor: getOptionalEnv("SUPER_ADMIN_EMAIL") ?? "super_admin",
+      action,
+      invitation_id: invitationId,
+      invitation_slug: invitationSlug,
+      metadata,
+    });
+  } catch (error) {
+    console.error("Failed to record admin audit log", error);
+  }
+}
+
 async function requireAdminForMutation(slug: string) {
   if (!(await isAdminAuthenticated(slug))) {
     return {
@@ -445,6 +470,17 @@ export async function createInvitationAsSuperAdmin(
     weddingDate: getRequiredFormValue(formData, "newWeddingDate"),
   });
 
+  if (result.slug && !result.error) {
+    await recordAdminAuditLog({
+      action: "invitation.created",
+      invitationSlug: result.slug,
+      metadata: {
+        sourceSlug,
+        status: "draft",
+      },
+    });
+  }
+
   revalidatePath("/admin/super");
 
   return result;
@@ -477,8 +513,8 @@ export async function resetInvitationAdminCode(
       updated_at: new Date().toISOString(),
     })
     .eq("slug", slug)
-    .select("slug")
-    .single<{ slug: string }>();
+    .select("id, slug")
+    .single<{ id: string; slug: string }>();
 
   if (error || !data) {
     return {
@@ -488,6 +524,12 @@ export async function resetInvitationAdminCode(
 
   revalidatePath("/admin/super");
   revalidatePath(`/admin/${slug}`);
+
+  await recordAdminAuditLog({
+    action: "admin_code.reset",
+    invitationId: data.id,
+    invitationSlug: data.slug,
+  });
 
   return {
     success: "관리자 코드가 재발급되었습니다.",
@@ -529,8 +571,8 @@ export async function updateInvitationStatus(
       updated_at: new Date().toISOString(),
     })
     .eq("slug", slug)
-    .select("slug, status")
-    .single<{ slug: string; status: "draft" | "published" }>();
+    .select("id, slug, status")
+    .single<{ id: string; slug: string; status: "draft" | "published" }>();
 
   if (error || !data) {
     return {
@@ -541,6 +583,15 @@ export async function updateInvitationStatus(
   revalidatePath("/admin/super");
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/w/${slug}`);
+
+  await recordAdminAuditLog({
+    action: "invitation.status_updated",
+    invitationId: data.id,
+    invitationSlug: data.slug,
+    metadata: {
+      status: data.status,
+    },
+  });
 
   return {
     success: `초대장을 ${data.status === "published" ? "공개" : "비공개"} 상태로 변경했습니다.`,
