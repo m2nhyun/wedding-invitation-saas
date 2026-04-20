@@ -31,7 +31,7 @@ The first real customer is our own invitation. The system should still be shaped
 - Edit couple, wedding, copy, location, and account fields
 - Upload hero, gallery, and section images through Supabase Storage
 - Create a new draft invitation from an existing invitation template
-- Super admin console for invitation list and admin-code reset
+- Super admin console for invitation list, publish state toggles, and admin-code reset
 
 Admin authentication routes each valid admin code to one invitation dashboard.
 

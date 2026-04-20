@@ -42,6 +42,13 @@ export type SuperAdminResetCodeState = {
   adminCode?: string;
 };
 
+export type SuperAdminStatusState = {
+  error?: string;
+  success?: string;
+  slug?: string;
+  status?: "draft" | "published";
+};
+
 export async function loginAdmin(
   _previousState: AdminLoginState,
   formData: FormData,
@@ -425,6 +432,59 @@ export async function resetInvitationAdminCode(
     success: "관리자 코드가 재발급되었습니다.",
     slug,
     adminCode,
+  };
+}
+
+export async function updateInvitationStatus(
+  _previousState: SuperAdminStatusState,
+  formData: FormData,
+): Promise<SuperAdminStatusState> {
+  if (!(await isSuperAdminAuthenticated())) {
+    return {
+      error: "슈퍼 관리자 로그인이 필요합니다.",
+    };
+  }
+
+  if (!hasSupabaseConfig()) {
+    return {
+      error: "Supabase 환경변수가 없어 상태를 변경할 수 없습니다.",
+    };
+  }
+
+  const slug = getRequiredFormValue(formData, "slug");
+  const status = getRequiredFormValue(formData, "status");
+
+  if (status !== "draft" && status !== "published") {
+    return {
+      error: "공개 상태 값이 올바르지 않습니다.",
+    };
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("invitations")
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("slug", slug)
+    .select("slug, status")
+    .single<{ slug: string; status: "draft" | "published" }>();
+
+  if (error || !data) {
+    return {
+      error: error?.message ?? "초대장을 찾을 수 없습니다.",
+    };
+  }
+
+  revalidatePath("/admin/super");
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/w/${slug}`);
+
+  return {
+    success: `초대장을 ${data.status === "published" ? "공개" : "비공개"} 상태로 변경했습니다.`,
+    slug: data.slug,
+    status: data.status,
   };
 }
 

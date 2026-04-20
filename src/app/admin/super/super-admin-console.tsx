@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import {
   resetInvitationAdminCode,
   type SuperAdminResetCodeState,
+  type SuperAdminStatusState,
+  updateInvitationStatus,
 } from "@/app/admin/actions";
 
 type InvitationSummary = {
@@ -21,9 +23,11 @@ type Props = {
 };
 
 const initialState: SuperAdminResetCodeState = {};
+const initialStatusState: SuperAdminStatusState = {};
 
 export function SuperAdminConsole({ invitations }: Props) {
-  const [state, formAction, isPending] = useActionState(resetInvitationAdminCode, initialState);
+  const [resetState, resetFormAction, resetIsPending] = useActionState(resetInvitationAdminCode, initialState);
+  const [statusState, statusFormAction, statusIsPending] = useActionState(updateInvitationStatus, initialStatusState);
 
   return (
     <section className="mt-8 border border-stone-200 bg-[#fffdf9] p-6">
@@ -35,15 +39,24 @@ export function SuperAdminConsole({ invitations }: Props) {
         <p className="text-sm text-stone-500">총 {invitations.length}개</p>
       </div>
 
-      {state.error ? <p className="mt-5 text-sm text-red-700">{state.error}</p> : null}
-      {state.success && state.slug && state.adminCode ? (
-        <div className="mt-5 border border-green-200 bg-green-50 p-4 text-sm leading-7 text-green-950">
-          <p className="font-medium">{state.success}</p>
+      {resetState.error ? <p className="mt-5 text-sm text-red-700">{resetState.error}</p> : null}
+      {statusState.error ? <p className="mt-5 text-sm text-red-700">{statusState.error}</p> : null}
+      {statusState.success && statusState.slug ? (
+        <div className="mt-5 border border-blue-200 bg-blue-50 p-4 text-sm leading-7 text-blue-950">
+          <p className="font-medium">{statusState.success}</p>
           <p>
-            대상: <span className="font-mono">/admin/{state.slug}</span>
+            대상: <span className="font-mono">/w/{statusState.slug}</span>
+          </p>
+        </div>
+      ) : null}
+      {resetState.success && resetState.slug && resetState.adminCode ? (
+        <div className="mt-5 border border-green-200 bg-green-50 p-4 text-sm leading-7 text-green-950">
+          <p className="font-medium">{resetState.success}</p>
+          <p>
+            대상: <span className="font-mono">/admin/{resetState.slug}</span>
           </p>
           <p>
-            새 관리자 코드: <span className="font-mono font-semibold">{state.adminCode}</span>
+            새 관리자 코드: <span className="font-mono font-semibold">{resetState.adminCode}</span>
           </p>
           <p className="mt-2 text-green-800">이 코드는 지금만 표시됩니다. 해당 초대장 담당자에게 안전하게 전달해주세요.</p>
         </div>
@@ -57,6 +70,7 @@ export function SuperAdminConsole({ invitations }: Props) {
               <th className="py-3 pr-4 font-medium">Couple</th>
               <th className="py-3 pr-4 font-medium">Date</th>
               <th className="py-3 pr-4 font-medium">Status</th>
+              <th className="py-3 pr-4 font-medium">Publish</th>
               <th className="py-3 pr-4 font-medium">Links</th>
               <th className="py-3 text-right font-medium">Admin Code</th>
             </tr>
@@ -75,6 +89,23 @@ export function SuperAdminConsole({ invitations }: Props) {
                   </span>
                 </td>
                 <td className="py-4 pr-4">
+                  <form action={statusFormAction}>
+                    <input type="hidden" name="slug" value={invitation.slug} />
+                    <input
+                      type="hidden"
+                      name="status"
+                      value={invitation.status === "published" ? "draft" : "published"}
+                    />
+                    <button
+                      type="submit"
+                      disabled={statusIsPending}
+                      className="h-10 border border-stone-300 bg-white px-3 text-xs disabled:cursor-not-allowed disabled:text-stone-400"
+                    >
+                      {invitation.status === "published" ? "비공개 전환" : "공개 전환"}
+                    </button>
+                  </form>
+                </td>
+                <td className="py-4 pr-4">
                   <div className="flex gap-2">
                     <a className="border border-stone-300 bg-white px-3 py-2 text-xs" href={`/w/${invitation.slug}`}>
                       공개
@@ -85,11 +116,11 @@ export function SuperAdminConsole({ invitations }: Props) {
                   </div>
                 </td>
                 <td className="py-4 text-right">
-                  <form action={formAction}>
+                  <form action={resetFormAction}>
                     <input type="hidden" name="slug" value={invitation.slug} />
                     <button
                       type="submit"
-                      disabled={isPending}
+                      disabled={resetIsPending}
                       className="h-10 bg-stone-950 px-4 text-xs font-medium tracking-[0.12em] text-white disabled:bg-stone-400"
                     >
                       재발급
