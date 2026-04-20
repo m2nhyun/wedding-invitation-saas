@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { getOptionalEnv } from "@/lib/env";
 
@@ -19,6 +19,15 @@ function sign(value: string) {
 
 export function hashAdminCode(code: string) {
   return createHmac("sha256", getAdminCodeSecret()).update(code.trim()).digest("hex");
+}
+
+export function getAdminCodeHashCandidates(code: string) {
+  const normalizedCode = code.trim();
+
+  return [
+    hashAdminCode(normalizedCode),
+    createHash("sha256").update(normalizedCode).digest("hex"),
+  ];
 }
 
 function createSessionValue(slug: string) {

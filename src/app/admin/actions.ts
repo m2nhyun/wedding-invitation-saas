@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
   clearAdminSession,
+  getAdminCodeHashCandidates,
   hashAdminCode,
   isAdminAuthenticated,
   setAdminSession,
@@ -38,12 +39,12 @@ export async function loginAdmin(
   }
 
   const adminCode = String(formData.get("password") ?? "").trim();
-  const adminCodeHash = hashAdminCode(adminCode);
+  const adminCodeHashes = getAdminCodeHashCandidates(adminCode);
   const supabase = createSupabaseAdminClient();
   const { data: invitation, error } = await supabase
     .from("invitations")
     .select("slug")
-    .eq("admin_code_hash", adminCodeHash)
+    .in("admin_code_hash", adminCodeHashes)
     .single<{ slug: string }>();
 
   if (error || !invitation) {

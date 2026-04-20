@@ -6,6 +6,6 @@ create index if not exists invitations_admin_code_hash_idx
   where admin_code_hash is not null;
 
 update public.invitations
-set admin_code_hash = '6f9e3f9ae54502696662a1e096e636a3a9605405e340b73d55b35e83dc9b3f38'
+set admin_code_hash = '1026365a854ed448dc025baab7dd5e1a4d59f2f4d0284e5e3db7b7965cac6521'
 where slug = 'jjym0818'
   and admin_code_hash is null;
