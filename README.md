@@ -20,7 +20,7 @@ The app is structured around multiple invitation records. Each public invitation
 - From an existing admin dashboard, create a new invitation by cloning the current invitation as a template.
 - New invitations start as `draft`.
 - Newly generated admin codes are shown once after creation and are not stored as plaintext.
-- Super admin can list invitations, toggle publish state, and reset an invitation admin code.
+- Super admin can create invitations from a template, list invitations, toggle publish state, and reset an invitation admin code.
 
 ## Getting Started
 

@@ -42,5 +42,5 @@ The super admin is separate from invitation-specific admin codes.
 
 - Login page: `/admin/super`
 - Credentials: `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`
-- Capabilities: list invitations, toggle publish state, and reset invitation admin codes
+- Capabilities: create invitations from a template, list invitations, toggle publish state, and reset invitation admin codes
 - Reset codes are shown only once after regeneration

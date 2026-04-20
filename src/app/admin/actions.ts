@@ -49,6 +49,8 @@ export type SuperAdminStatusState = {
   status?: "draft" | "published";
 };
 
+export type SuperAdminCreateInvitationState = AdminCreateInvitationState;
+
 export async function loginAdmin(
   _previousState: AdminLoginState,
   formData: FormData,
@@ -239,12 +241,34 @@ export async function createInvitation(
     };
   }
 
-  const adminCode = createAdminCode(slug);
-  const adminCodeHash = hashAdminCode(adminCode);
   const groomName = getRequiredFormValue(formData, "newGroomName");
   const brideName = getRequiredFormValue(formData, "newBrideName");
   const weddingDate = getRequiredFormValue(formData, "newWeddingDate");
 
+  return cloneInvitationFromTemplate({
+    sourceSlug,
+    slug,
+    groomName,
+    brideName,
+    weddingDate,
+  });
+}
+
+async function cloneInvitationFromTemplate({
+  sourceSlug,
+  slug,
+  groomName,
+  brideName,
+  weddingDate,
+}: {
+  sourceSlug: string;
+  slug: string;
+  groomName: string;
+  brideName: string;
+  weddingDate: string;
+}): Promise<AdminCreateInvitationState> {
+  const adminCode = createAdminCode(slug);
+  const adminCodeHash = hashAdminCode(adminCode);
   const supabase = createSupabaseAdminClient();
   const { data: source, error: sourceError } = await supabase
     .from("invitations")
@@ -387,6 +411,43 @@ export async function createInvitation(
     slug,
     adminCode,
   };
+}
+
+export async function createInvitationAsSuperAdmin(
+  _previousState: SuperAdminCreateInvitationState,
+  formData: FormData,
+): Promise<SuperAdminCreateInvitationState> {
+  if (!(await isSuperAdminAuthenticated())) {
+    return {
+      error: "슈퍼 관리자 로그인이 필요합니다.",
+    };
+  }
+
+  if (!hasSupabaseConfig()) {
+    return {
+      error: "Supabase 환경변수가 없어 생성할 수 없습니다.",
+    };
+  }
+
+  const sourceSlug = getRequiredFormValue(formData, "sourceSlug");
+  const slug = normalizeSlug(getRequiredFormValue(formData, "newSlug"));
+  if (slug.length < 3) {
+    return {
+      error: "slug는 영문/숫자/하이픈으로 3자 이상이어야 합니다.",
+    };
+  }
+
+  const result = await cloneInvitationFromTemplate({
+    sourceSlug,
+    slug,
+    groomName: getRequiredFormValue(formData, "newGroomName"),
+    brideName: getRequiredFormValue(formData, "newBrideName"),
+    weddingDate: getRequiredFormValue(formData, "newWeddingDate"),
+  });
+
+  revalidatePath("/admin/super");
+
+  return result;
 }
 
 export async function resetInvitationAdminCode(
