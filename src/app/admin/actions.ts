@@ -1,6 +1,6 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
@@ -8,8 +8,11 @@ import {
   getAdminCodeHashCandidates,
   hashAdminCode,
   isAdminAuthenticated,
+  isSuperAdminAuthenticated,
   setAdminSession,
+  setSuperAdminSession,
 } from "@/lib/admin-session";
+import { getOptionalEnv } from "@/lib/env";
 import { createSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase/server";
 
 export type AdminLoginState = {
@@ -22,6 +25,17 @@ export type AdminSaveState = {
 };
 
 export type AdminCreateInvitationState = {
+  error?: string;
+  success?: string;
+  slug?: string;
+  adminCode?: string;
+};
+
+export type SuperAdminLoginState = {
+  error?: string;
+};
+
+export type SuperAdminResetCodeState = {
   error?: string;
   success?: string;
   slug?: string;
@@ -55,6 +69,39 @@ export async function loginAdmin(
 
   await setAdminSession(invitation.slug);
   redirect(`/admin/${invitation.slug}`);
+}
+
+function safeEqual(value: string, expected: string) {
+  const valueBuffer = Buffer.from(value);
+  const expectedBuffer = Buffer.from(expected);
+
+  return valueBuffer.length === expectedBuffer.length && timingSafeEqual(valueBuffer, expectedBuffer);
+}
+
+export async function loginSuperAdmin(
+  _previousState: SuperAdminLoginState,
+  formData: FormData,
+): Promise<SuperAdminLoginState> {
+  const expectedEmail = getOptionalEnv("SUPER_ADMIN_EMAIL");
+  const expectedPassword = getOptionalEnv("SUPER_ADMIN_PASSWORD");
+
+  if (!expectedEmail || !expectedPassword) {
+    return {
+      error: "슈퍼 관리자 환경변수가 설정되지 않았습니다.",
+    };
+  }
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  if (!safeEqual(email, expectedEmail.trim().toLowerCase()) || !safeEqual(password, expectedPassword)) {
+    return {
+      error: "이메일 또는 비밀번호가 올바르지 않습니다.",
+    };
+  }
+
+  await setSuperAdminSession();
+  redirect("/admin/super");
 }
 
 export async function logoutAdmin() {
@@ -330,6 +377,52 @@ export async function createInvitation(
 
   return {
     success: "새 초대장이 생성되었습니다. 관리자 코드는 지금만 표시됩니다.",
+    slug,
+    adminCode,
+  };
+}
+
+export async function resetInvitationAdminCode(
+  _previousState: SuperAdminResetCodeState,
+  formData: FormData,
+): Promise<SuperAdminResetCodeState> {
+  if (!(await isSuperAdminAuthenticated())) {
+    return {
+      error: "슈퍼 관리자 로그인이 필요합니다.",
+    };
+  }
+
+  if (!hasSupabaseConfig()) {
+    return {
+      error: "Supabase 환경변수가 없어 재발급할 수 없습니다.",
+    };
+  }
+
+  const slug = getRequiredFormValue(formData, "slug");
+  const adminCode = createAdminCode(slug);
+  const adminCodeHash = hashAdminCode(adminCode);
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("invitations")
+    .update({
+      admin_code_hash: adminCodeHash,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("slug", slug)
+    .select("slug")
+    .single<{ slug: string }>();
+
+  if (error || !data) {
+    return {
+      error: error?.message ?? "초대장을 찾을 수 없습니다.",
+    };
+  }
+
+  revalidatePath("/admin/super");
+  revalidatePath(`/admin/${slug}`);
+
+  return {
+    success: "관리자 코드가 재발급되었습니다.",
     slug,
     adminCode,
   };

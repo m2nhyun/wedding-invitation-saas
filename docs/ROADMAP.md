@@ -31,6 +31,7 @@ The first real customer is our own invitation. The system should still be shaped
 - Edit couple, wedding, copy, location, and account fields
 - Upload hero, gallery, and section images through Supabase Storage
 - Create a new draft invitation from an existing invitation template
+- Super admin console for invitation list and admin-code reset
 
 Admin authentication routes each valid admin code to one invitation dashboard.
 
@@ -50,7 +51,7 @@ Target multi-invitation admin model:
 - Slug management
 - Preview URL
 - Open Graph metadata
-- Admin code reset/recovery flow
+- More complete admin code reset/recovery audit trail
 - Vercel environment variable checklist
 
 ## Explicitly Deferred

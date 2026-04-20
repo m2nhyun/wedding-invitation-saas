@@ -7,6 +7,8 @@ Create `.env.local` from `.env.example`.
 ```bash
 ADMIN_SESSION_SECRET=replace-with-at-least-32-random-characters
 ADMIN_CODE_SECRET=replace-with-at-least-32-random-characters
+SUPER_ADMIN_EMAIL=admin@example.com
+SUPER_ADMIN_PASSWORD=replace-with-a-long-password
 
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
@@ -33,3 +35,12 @@ The admin uses invitation-specific admin codes.
 - New invitation creation: clone an existing dashboard, generate a new admin code, and show it once
 
 Do not make the public slug and admin code identical. The public URL can be shared widely, while the admin code should be treated like a password.
+
+## Super Admin
+
+The super admin is separate from invitation-specific admin codes.
+
+- Login page: `/admin/super`
+- Credentials: `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`
+- Capabilities: list invitations and reset invitation admin codes
+- Reset codes are shown only once after regeneration

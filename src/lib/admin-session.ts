@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getOptionalEnv } from "@/lib/env";
 
 const ADMIN_SESSION_COOKIE = "wedding_admin_session";
+const SUPER_ADMIN_SESSION_COOKIE = "wedding_super_admin_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 function getSessionSecret() {
@@ -95,7 +96,26 @@ export async function setAdminSession(slug: string) {
   });
 }
 
+export async function isSuperAdminAuthenticated() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get(SUPER_ADMIN_SESSION_COOKIE)?.value;
+
+  return session ? verifySessionValue(session) === "super" : false;
+}
+
+export async function setSuperAdminSession() {
+  const cookieStore = await cookies();
+  cookieStore.set(SUPER_ADMIN_SESSION_COOKIE, createSessionValue("super"), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+  });
+}
+
 export async function clearAdminSession() {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_SESSION_COOKIE);
+  cookieStore.delete(SUPER_ADMIN_SESSION_COOKIE);
 }

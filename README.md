@@ -9,6 +9,7 @@ The app is structured around multiple invitation records. Each public invitation
 - Public invitation: `/w/[slug]`
 - Admin login: `/admin`
 - Invitation admin: `/admin/[slug]`
+- Super admin: `/admin/super`
 
 ## Current Admin Flow
 
@@ -19,6 +20,7 @@ The app is structured around multiple invitation records. Each public invitation
 - From an existing admin dashboard, create a new invitation by cloning the current invitation as a template.
 - New invitations start as `draft`.
 - Newly generated admin codes are shown once after creation and are not stored as plaintext.
+- Super admin can list invitations and reset an invitation admin code.
 
 ## Getting Started
 
@@ -50,6 +52,8 @@ Required values:
 ```bash
 ADMIN_SESSION_SECRET=
 ADMIN_CODE_SECRET=
+SUPER_ADMIN_EMAIL=
+SUPER_ADMIN_PASSWORD=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
