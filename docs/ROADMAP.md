@@ -31,6 +31,17 @@ The first real customer is our own invitation. The system should still be shaped
 - Edit couple, wedding, copy, location, and account fields
 - Upload hero, gallery, timeline, location, and OG images
 
+Current admin authentication is a single global password for the whole app. It does not yet route different passwords to different invitations.
+
+Target multi-invitation admin model:
+
+- Public page: `/w/[slug]`
+- Admin page: `/admin/[slug]`
+- Login: invitation-specific admin code
+- Storage: hashed admin code per invitation, never plaintext
+- Session: stores the authorized invitation slug
+- Authorization: every admin mutation checks both session and invitation slug
+
 ## Phase 4: Publishing Workflow
 
 - Draft and published states

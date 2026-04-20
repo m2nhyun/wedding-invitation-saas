@@ -31,3 +31,5 @@ The first admin version uses a single password from `ADMIN_PASSWORD`.
 - Session: signed httpOnly cookie
 
 This can later be replaced by Supabase Auth without changing the public invitation route.
+
+Important: different passwords do not yet map to different invitation dashboards. The current password is global for the deployed app. The intended SaaS version should move to `/admin/[slug]` and store a hashed invitation-specific admin code.
