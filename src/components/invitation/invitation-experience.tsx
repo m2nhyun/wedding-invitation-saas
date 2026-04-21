@@ -130,10 +130,12 @@ export function InvitationExperience({ invitation }: Props) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f7f3ed] text-stone-900">
+    <main className="wedding-shell min-h-screen text-stone-900">
       {!curtainOpen ? (
         <section className="fixed inset-0 z-50 flex items-center justify-center bg-[#f4efe7] px-8 text-center">
           <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/80 to-transparent" />
+          <div className="absolute inset-x-8 top-8 h-px bg-gradient-to-r from-transparent via-stone-300/80 to-transparent" />
+          <div className="absolute inset-x-8 bottom-8 h-px bg-gradient-to-r from-transparent via-stone-300/80 to-transparent" />
           <div className="relative flex max-w-sm flex-col items-center">
             <p className="mb-5 font-serif text-sm tracking-[0.32em] text-stone-500">
               {invitation.couple.groom.nameEn} & {invitation.couple.bride.nameEn}
@@ -151,7 +153,7 @@ export function InvitationExperience({ invitation }: Props) {
             <button
               type="button"
               onClick={() => setCurtainOpen(true)}
-              className="mt-10 h-12 min-w-44 border border-stone-900/20 bg-stone-950 px-7 text-sm font-medium tracking-[0.18em] text-white shadow-sm transition hover:bg-stone-800"
+              className="mt-10 h-12 min-w-44 rounded-full border border-stone-900/20 bg-stone-950 px-7 text-sm font-medium tracking-[0.18em] text-white shadow-sm transition hover:bg-stone-800"
             >
               초대장 열기
             </button>
@@ -159,12 +161,12 @@ export function InvitationExperience({ invitation }: Props) {
         </section>
       ) : null}
 
-      <article className="mx-auto min-h-screen max-w-[520px] bg-[#fffdf9] shadow-[0_0_60px_rgba(74,54,35,0.12)]">
+      <article className="wedding-paper mx-auto min-h-screen max-w-[520px] shadow-[0_0_60px_rgba(74,54,35,0.12)]">
         <section className="relative min-h-[100svh] overflow-hidden">
           <img
             src={invitation.images.hero}
             alt={`${invitation.couple.groom.name} ${invitation.couple.bride.name} 웨딩 사진`}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full scale-[1.03] object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/0 to-black/65" />
           <div className="relative flex min-h-[100svh] flex-col justify-between px-7 py-9 text-white">
@@ -185,13 +187,13 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
         </section>
 
-        <section className="px-8 py-20 text-center">
+        <section className="wedding-reveal px-8 py-24 text-center">
           <p className="mb-4 font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Invitation</p>
           <h2 className="font-serif text-3xl text-stone-950">{invitation.copy.introTitle}</h2>
           <p className="mx-auto mt-9 whitespace-pre-line text-[15px] leading-9 text-stone-600">
             {invitation.copy.invitation}
           </p>
-          <div className="mx-auto my-10 h-px w-10 bg-stone-300" />
+          <div className="wedding-hairline mx-auto my-10" />
           <div className="space-y-3 text-sm leading-7 text-stone-600">
             <p>
               {invitation.couple.groom.father} · {invitation.couple.groom.mother}
@@ -206,9 +208,9 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
         </section>
 
-        <section className="bg-[#eee4d6] px-8 py-16">
-          <div className="overflow-hidden rounded-sm">
-            <img src={invitation.images.intro} alt="두 사람의 분위기 사진" className="h-[420px] w-full object-cover" />
+        <section className="wedding-reveal bg-[#efe6d9] px-8 py-20">
+          <div className="wedding-photo aspect-[4/5] rounded-t-full rounded-b-[3px]">
+            <img src={invitation.images.intro} alt="두 사람의 분위기 사진" />
           </div>
           <div className="mt-10 grid grid-cols-2 gap-4 text-center">
             <div className="border-r border-stone-300/70 pr-4">
@@ -230,15 +232,17 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
         </section>
 
-        <section className="px-8 py-20 text-center">
-          <img src={invitation.images.quote} alt="인용문 배경 사진" className="h-72 w-full object-cover" />
+        <section className="wedding-reveal px-8 py-24 text-center">
+          <div className="wedding-photo mx-auto aspect-[5/4] max-w-sm rounded-[3px]">
+            <img src={invitation.images.quote} alt="인용문 배경 사진" />
+          </div>
           <blockquote className="mt-10 whitespace-pre-line font-serif text-2xl leading-relaxed text-stone-900">
             {invitation.copy.quote}
           </blockquote>
           <p className="mt-5 text-sm text-stone-500">{invitation.copy.quoteBy}</p>
         </section>
 
-        <section className="bg-[#f3ede4] px-7 py-18">
+        <section className="wedding-reveal bg-[#f5eee5] px-7 py-20">
           <div className="text-center">
             <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Wedding Day</p>
             <h2 className="mt-4 font-serif text-3xl">예식 안내</h2>
@@ -249,13 +253,13 @@ export function InvitationExperience({ invitation }: Props) {
             </p>
           </div>
 
-          <div className="mt-10 bg-[#fffdf9] p-5 shadow-sm">
+          <div className="mt-10 rounded-[3px] bg-[#fffdf9] p-5 shadow-sm">
             <div className="mb-5 flex items-end justify-between">
               <p className="font-serif text-3xl">{weddingDate.month}월</p>
               <button
                 type="button"
                 onClick={openGoogleCalendar}
-                className="inline-flex h-10 items-center gap-2 border border-stone-300 px-3 text-xs font-medium text-stone-700"
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-stone-300 px-3 text-xs font-medium text-stone-700"
               >
                 <IconCalendar />
                 일정 추가
@@ -291,7 +295,7 @@ export function InvitationExperience({ invitation }: Props) {
               ["Min", remaining.minutes],
               ["Sec", remaining.seconds],
             ].map(([label, value]) => (
-              <div key={label} className="bg-[#fffdf9] py-4 shadow-sm">
+              <div key={label} className="rounded-[3px] bg-[#fffdf9] py-4 shadow-sm">
                 <p className="font-serif text-2xl text-stone-950">{value}</p>
                 <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-stone-400">{label}</p>
               </div>
@@ -300,24 +304,26 @@ export function InvitationExperience({ invitation }: Props) {
         </section>
 
         {invitation.gallery.length > 0 ? (
-          <section className="px-7 py-20">
+          <section className="wedding-reveal px-7 py-24">
             <div className="text-center">
               <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Gallery</p>
               <h2 className="mt-4 font-serif text-3xl">우리의 순간들</h2>
             </div>
-            <div className="mt-10 grid grid-cols-2 gap-2">
+            <div className="mt-10 grid grid-cols-2 gap-2.5">
               {invitation.gallery.slice(0, visibleGalleryCount).map((image, index) => (
                 <button
                   key={image.src}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  className="group aspect-square overflow-hidden bg-stone-100"
+                  className={`group wedding-photo ${
+                    index % 3 === 0 ? "aspect-[4/5]" : index % 3 === 1 ? "aspect-[5/6] translate-y-5" : "aspect-[1/1.18]"
+                  } rounded-[3px] bg-stone-100`}
                   aria-label={`${index + 1}번째 갤러리 사진 크게 보기`}
                 >
                   <img
                     src={image.src}
                     alt={image.alt}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    className="transition duration-700 group-hover:scale-105"
                   />
                 </button>
               ))}
@@ -326,7 +332,7 @@ export function InvitationExperience({ invitation }: Props) {
               <button
                 type="button"
                 onClick={() => setVisibleGalleryCount(invitation.gallery.length)}
-                className="mx-auto mt-8 block h-11 min-w-32 border border-stone-300 px-6 text-sm text-stone-700"
+                className="mx-auto mt-12 block h-11 min-w-32 rounded-full border border-stone-300 px-6 text-sm text-stone-700"
               >
                 더 보기
               </button>
@@ -334,7 +340,7 @@ export function InvitationExperience({ invitation }: Props) {
           </section>
         ) : null}
 
-        <section className="bg-[#eee4d6] px-8 py-20">
+        <section className="wedding-reveal bg-[#efe6d9] px-8 py-24">
           <div className="text-center">
             <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-500">Our Time</p>
             <h2 className="mt-4 font-serif text-3xl">{invitation.copy.storyTitle}</h2>
@@ -342,8 +348,10 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
           <div className="mt-10 space-y-7">
             {invitation.timeline.map((item) => (
-              <div key={item.date} className="grid grid-cols-[112px_1fr] gap-5">
-                <img src={item.image} alt={item.title} className="h-36 w-28 object-cover" />
+              <div key={item.date} className="grid grid-cols-[108px_1fr] gap-5">
+                <div className="wedding-photo h-40 w-27 rounded-[3px]">
+                  <img src={item.image} alt={item.title} />
+                </div>
                 <div className="flex flex-col justify-center">
                   <p className="text-xs tracking-[0.18em] text-stone-500">{item.date}</p>
                   <h3 className="mt-2 font-serif text-2xl">{item.title}</h3>
@@ -354,7 +362,7 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
         </section>
 
-        <section className="px-8 py-20">
+        <section className="wedding-reveal px-8 py-24">
           <div className="text-center">
             <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Location</p>
             <h2 className="mt-4 font-serif text-3xl">오시는 길</h2>
@@ -364,7 +372,9 @@ export function InvitationExperience({ invitation }: Props) {
             </p>
           </div>
           <div className="mt-9 bg-[#f2eee7] p-5">
-            <img src={invitation.images.calendar} alt="예식 장소 분위기 사진" className="h-56 w-full object-cover" />
+            <div className="wedding-photo aspect-[4/3] rounded-[3px]">
+              <img src={invitation.images.calendar} alt="예식 장소 분위기 사진" />
+            </div>
             <p className="mt-5 text-sm leading-7 text-stone-600">{invitation.copy.locationGuide}</p>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2">
@@ -378,7 +388,7 @@ export function InvitationExperience({ invitation }: Props) {
                 href={href}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-1 border border-stone-300 text-xs text-stone-700"
+                className="inline-flex h-11 items-center justify-center gap-1 rounded-full border border-stone-300 text-xs text-stone-700"
               >
                 <IconMap />
                 {label}
@@ -388,14 +398,14 @@ export function InvitationExperience({ invitation }: Props) {
           <button
             type="button"
             onClick={() => copyText("주소", invitation.wedding.address)}
-            className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 bg-stone-950 text-sm text-white"
+            className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-stone-950 text-sm text-white"
           >
             <IconCopy />
             주소 복사
           </button>
         </section>
 
-        <section className="bg-[#f3ede4] px-8 py-20">
+        <section className="wedding-reveal bg-[#f5eee5] px-8 py-24">
           <div className="text-center">
             <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Account</p>
             <h2 className="mt-4 font-serif text-3xl">마음 전하실 곳</h2>
@@ -409,7 +419,7 @@ export function InvitationExperience({ invitation }: Props) {
                   {invitation.accounts
                     .filter((account) => account.side === side)
                     .map((account) => (
-                      <div key={`${account.role}-${account.number}`} className="bg-[#fffdf9] p-4 shadow-sm">
+                      <div key={`${account.role}-${account.number}`} className="rounded-[3px] bg-[#fffdf9] p-4 shadow-sm">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-medium text-stone-950">{account.role} {account.name}</p>
@@ -422,7 +432,7 @@ export function InvitationExperience({ invitation }: Props) {
                             onClick={() =>
                               copyText(account.role, `${account.bank} ${account.number} ${account.name}`)
                             }
-                            className="inline-flex h-9 items-center gap-1 border border-stone-300 px-3 text-xs text-stone-700"
+                            className="inline-flex h-9 items-center gap-1 rounded-full border border-stone-300 px-3 text-xs text-stone-700"
                           >
                             <IconCopy />
                             복사
@@ -436,7 +446,7 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
         </section>
 
-        <section className="relative px-8 py-20 text-center text-white">
+        <section className="relative px-8 py-24 text-center text-white">
           <img src={invitation.images.closing} alt="마무리 사진" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-black/45" />
           <div className="relative">
