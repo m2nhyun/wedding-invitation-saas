@@ -58,7 +58,7 @@ export async function loginAdmin(
 ): Promise<AdminLoginState> {
   if (!hasSupabaseConfig()) {
     return {
-      error: "Supabase 환경변수가 없어 로그인할 수 없습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -97,7 +97,7 @@ export async function loginSuperAdmin(
 
   if (!expectedEmail || !expectedPassword) {
     return {
-      error: "슈퍼 관리자 환경변수가 설정되지 않았습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -189,7 +189,7 @@ export async function saveInvitationDetails(
 
   if (!hasSupabaseConfig()) {
     return {
-      error: "Supabase 환경변수가 없어 저장할 수 없습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -232,7 +232,7 @@ export async function saveInvitationDetails(
 
   if (error) {
     return {
-      error: error.message,
+      error: "저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -276,7 +276,7 @@ async function cloneInvitationFromTemplate({
 
   if (sourceError || !source) {
     return {
-      error: sourceError?.message ?? "원본 초대장을 찾을 수 없습니다.",
+      error: "기준 초대장을 찾을 수 없습니다.",
     };
   }
 
@@ -311,7 +311,7 @@ async function cloneInvitationFromTemplate({
 
   if (insertError || !created) {
     return {
-      error: insertError?.message ?? "초대장을 생성하지 못했습니다.",
+      error: "초대장을 생성하지 못했습니다. 입력 내용을 확인해주세요.",
     };
   }
 
@@ -336,7 +336,7 @@ async function cloneInvitationFromTemplate({
     const { error } = await supabase.from("invitation_media").insert(mediaRows);
     if (error) {
       return {
-        error: error.message,
+        error: "사진 정보를 복사하지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
   }
@@ -364,7 +364,7 @@ async function cloneInvitationFromTemplate({
     const { error } = await supabase.from("invitation_accounts").insert(accountRows);
     if (error) {
       return {
-        error: error.message,
+        error: "계좌 정보를 복사하지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
   }
@@ -390,7 +390,7 @@ async function cloneInvitationFromTemplate({
     const { error } = await supabase.from("invitation_timeline_items").insert(timelineRows);
     if (error) {
       return {
-        error: error.message,
+        error: "초대장 내용을 복사하지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
   }
@@ -416,7 +416,7 @@ export async function createInvitationAsSuperAdmin(
 
   if (!hasSupabaseConfig()) {
     return {
-      error: "Supabase 환경변수가 없어 생성할 수 없습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -424,7 +424,7 @@ export async function createInvitationAsSuperAdmin(
   const slug = normalizeSlug(getRequiredFormValue(formData, "newSlug"));
   if (slug.length < 3) {
     return {
-      error: "slug는 영문/숫자/하이픈으로 3자 이상이어야 합니다.",
+      error: "영문 주소는 영문, 숫자, 하이픈으로 3자 이상 입력해주세요.",
     };
   }
 
@@ -464,7 +464,7 @@ export async function resetInvitationAdminCode(
 
   if (!hasSupabaseConfig()) {
     return {
-      error: "Supabase 환경변수가 없어 재발급할 수 없습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -484,7 +484,7 @@ export async function resetInvitationAdminCode(
 
   if (error || !data) {
     return {
-      error: error?.message ?? "초대장을 찾을 수 없습니다.",
+      error: "초대장을 찾을 수 없습니다.",
     };
   }
 
@@ -516,7 +516,7 @@ export async function updateInvitationStatus(
 
   if (!hasSupabaseConfig()) {
     return {
-      error: "Supabase 환경변수가 없어 상태를 변경할 수 없습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -542,7 +542,7 @@ export async function updateInvitationStatus(
 
   if (error || !data) {
     return {
-      error: error?.message ?? "초대장을 찾을 수 없습니다.",
+      error: "초대장을 찾을 수 없습니다.",
     };
   }
 
@@ -592,7 +592,7 @@ export async function saveInvitationAssets(
 
   if (!hasSupabaseConfig()) {
     return {
-      error: "Supabase 환경변수가 없어 저장할 수 없습니다.",
+      error: "잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -605,7 +605,7 @@ export async function saveInvitationAssets(
 
   if (invitationError || !invitation) {
     return {
-      error: invitationError?.message ?? "초대장을 찾을 수 없습니다.",
+      error: "초대장을 찾을 수 없습니다.",
     };
   }
 
@@ -672,7 +672,7 @@ export async function saveInvitationAssets(
             });
 
           if (uploadError) {
-            throw new Error(uploadError.message);
+            throw new Error("사진을 업로드하지 못했습니다. 파일을 확인한 뒤 다시 시도해주세요.");
           }
 
           publicUrl = supabase.storage.from("wedding-media").getPublicUrl(storagePath).data.publicUrl;
@@ -724,7 +724,7 @@ export async function saveInvitationAssets(
 
   if (mediaDeleteError) {
     return {
-      error: mediaDeleteError.message,
+      error: "사진 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -733,7 +733,7 @@ export async function saveInvitationAssets(
 
     if (mediaInsertError) {
       return {
-        error: mediaInsertError.message,
+        error: "사진 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
   }
@@ -745,7 +745,7 @@ export async function saveInvitationAssets(
 
   if (accountsDeleteError) {
     return {
-      error: accountsDeleteError.message,
+      error: "계좌 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
     };
   }
 
@@ -754,7 +754,7 @@ export async function saveInvitationAssets(
 
     if (accountsInsertError) {
       return {
-        error: accountsInsertError.message,
+        error: "계좌 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
   }

@@ -158,7 +158,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
         <section className="admin-panel rounded-[18px] p-6">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="admin-label">Editor</p>
+              <p className="admin-label">기본 정보</p>
               <h2 className="mt-3 font-serif text-3xl">초대장 정보 편집</h2>
             </div>
             <label className="block min-w-40">
@@ -224,7 +224,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
             disabled={!canSave || detailsIsPending}
             className="admin-button-primary h-12 w-full text-sm font-medium tracking-[0.16em] disabled:cursor-not-allowed disabled:bg-stone-400"
           >
-            {detailsIsPending ? "저장 중" : canSave ? "기본 정보 저장" : "Supabase env 필요"}
+            {detailsIsPending ? "저장 중" : canSave ? "기본 정보 저장" : "잠시 후 다시 시도해주세요"}
           </button>
         </div>
       </form>
@@ -232,10 +232,10 @@ export function InvitationEditor({ invitation, canSave }: Props) {
       <form action={assetsFormAction} className="space-y-6">
         <input type="hidden" name="slug" value={invitation.slug} />
         <section className="admin-panel rounded-[18px] p-6">
-          <p className="admin-label">Media</p>
+          <p className="admin-label">사진 관리</p>
           <h2 className="mt-3 font-serif text-3xl">이미지 업로드 관리</h2>
           <p className="mt-4 text-sm leading-7 text-stone-600">
-            업로드한 이미지는 Supabase Storage의 `wedding-media` bucket에 저장되고 공개 페이지에 즉시 반영됩니다.
+            대표 사진과 갤러리 사진을 올리고 공개 페이지에서 보이는 순서를 조정합니다.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <ImageUploadField label="히어로 이미지" fileName="heroFile" currentName="heroCurrentUrl" currentUrl={invitation.images.hero} />
@@ -261,7 +261,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
         </section>
 
         <section className="admin-panel rounded-[18px] p-6">
-          <p className="admin-label">Accounts</p>
+          <p className="admin-label">계좌 관리</p>
           <h2 className="mt-3 font-serif text-3xl">계좌 정보</h2>
           <div className="mt-6 space-y-5">
             {accountSlots.map((account, index) => (
@@ -294,7 +294,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
             disabled={!canSave || assetsIsPending}
             className="admin-button-primary h-12 w-full text-sm font-medium tracking-[0.16em] disabled:cursor-not-allowed disabled:bg-stone-400"
           >
-            {assetsIsPending ? "저장 중" : canSave ? "이미지/계좌 저장" : "Supabase env 필요"}
+            {assetsIsPending ? "저장 중" : canSave ? "이미지/계좌 저장" : "잠시 후 다시 시도해주세요"}
           </button>
         </div>
       </form>

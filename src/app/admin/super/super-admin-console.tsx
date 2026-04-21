@@ -69,17 +69,17 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
       <section className="admin-panel rounded-[18px] p-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="admin-label">Create</p>
-            <h2 className="mt-3 font-serif text-3xl">슈퍼 관리자 생성</h2>
+            <p className="admin-label">초대장 생성</p>
+            <h2 className="mt-3 font-serif text-3xl">새 초대장 만들기</h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
-              기존 초대장을 템플릿으로 복제해서 새 초대장을 만듭니다. 생성된 초대장은 비공개 상태로 시작합니다.
+              기존 초대장의 구성과 디자인을 바탕으로 새 초대장을 만듭니다.
             </p>
           </div>
         </div>
 
         <form action={createFormAction} className="mt-6 grid gap-4 md:grid-cols-[1fr_1.2fr_1fr_1fr_1fr_auto] md:items-end">
           <label className="block">
-            <span className="text-sm font-medium text-stone-700">템플릿</span>
+            <span className="text-sm font-medium text-stone-700">기준 초대장</span>
             <select
               name="sourceSlug"
               required
@@ -93,7 +93,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
             </select>
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-stone-700">공개 URL slug</span>
+            <span className="text-sm font-medium text-stone-700">영문 주소</span>
             <input
               name="newSlug"
               placeholder="ex. sample-wedding"
@@ -150,7 +150,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
             <p>
               관리자 코드: <span className="font-mono font-semibold">{createState.adminCode}</span>
             </p>
-            <p className="mt-2 text-green-800">이 코드는 지금만 표시됩니다. 초대장 담당자에게 안전하게 전달해주세요.</p>
+            <p className="mt-2 text-green-800">관리자 코드는 다시 확인할 수 없으니 안전하게 보관해주세요.</p>
           </div>
         ) : null}
       </section>
@@ -158,8 +158,8 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
       <section className="admin-panel rounded-[18px] p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="admin-label">Invitations</p>
-          <h2 className="mt-3 font-serif text-3xl">초대장 운영 목록</h2>
+          <p className="admin-label">초대장 목록</p>
+          <h2 className="mt-3 font-serif text-3xl">초대장 목록</h2>
         </div>
         <p className="text-sm text-stone-500">총 {invitations.length}개</p>
       </div>
@@ -183,7 +183,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
           <p>
             새 관리자 코드: <span className="font-mono font-semibold">{resetState.adminCode}</span>
           </p>
-          <p className="mt-2 text-green-800">이 코드는 지금만 표시됩니다. 해당 초대장 담당자에게 안전하게 전달해주세요.</p>
+          <p className="mt-2 text-green-800">관리자 코드는 다시 확인할 수 없으니 안전하게 보관해주세요.</p>
         </div>
       ) : null}
 
@@ -191,13 +191,13 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
         <table className="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-stone-200 text-xs uppercase tracking-[0.18em] text-stone-400">
-              <th className="py-3 pr-4 font-medium">Slug</th>
-              <th className="py-3 pr-4 font-medium">Couple</th>
-              <th className="py-3 pr-4 font-medium">Date</th>
-              <th className="py-3 pr-4 font-medium">Status</th>
-              <th className="py-3 pr-4 font-medium">Publish</th>
-              <th className="py-3 pr-4 font-medium">Links</th>
-              <th className="py-3 text-right font-medium">Admin Code</th>
+              <th className="py-3 pr-4 font-medium">주소</th>
+              <th className="py-3 pr-4 font-medium">이름</th>
+              <th className="py-3 pr-4 font-medium">예식일</th>
+              <th className="py-3 pr-4 font-medium">상태</th>
+              <th className="py-3 pr-4 font-medium">공개 설정</th>
+              <th className="py-3 pr-4 font-medium">바로가기</th>
+              <th className="py-3 text-right font-medium">관리자 코드</th>
             </tr>
           </thead>
           <tbody>
@@ -262,7 +262,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
       <section className="admin-panel rounded-[18px] p-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="admin-label">Audit</p>
+            <p className="admin-label">변경 기록</p>
             <h2 className="mt-3 font-serif text-3xl">최근 운영 로그</h2>
           </div>
           <p className="text-sm text-stone-500">최근 {auditLogs.length}건</p>
@@ -272,11 +272,11 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-stone-200 text-xs uppercase tracking-[0.18em] text-stone-400">
-                <th className="py-3 pr-4 font-medium">Time</th>
-                <th className="py-3 pr-4 font-medium">Action</th>
-                <th className="py-3 pr-4 font-medium">Slug</th>
-                <th className="py-3 pr-4 font-medium">Detail</th>
-                <th className="py-3 font-medium">Actor</th>
+                <th className="py-3 pr-4 font-medium">시간</th>
+                <th className="py-3 pr-4 font-medium">변경 내용</th>
+                <th className="py-3 pr-4 font-medium">초대장</th>
+                <th className="py-3 pr-4 font-medium">상세</th>
+                <th className="py-3 font-medium">처리자</th>
               </tr>
             </thead>
             <tbody>
