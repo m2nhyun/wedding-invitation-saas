@@ -6,6 +6,7 @@ import type { WeddingInvitation } from "@/lib/mock-data";
 
 type Props = {
   invitation: WeddingInvitation;
+  previewMode?: boolean;
 };
 
 function formatWeddingDate(invitation: WeddingInvitation) {
@@ -62,8 +63,8 @@ function IconCalendar() {
   );
 }
 
-export function InvitationExperience({ invitation }: Props) {
-  const [curtainOpen, setCurtainOpen] = useState(false);
+export function InvitationExperience({ invitation, previewMode = false }: Props) {
+  const [curtainOpen, setCurtainOpen] = useState(previewMode);
   const [visibleGalleryCount, setVisibleGalleryCount] = useState(6);
   const [activeImage, setActiveImage] = useState<number | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -94,11 +95,15 @@ export function InvitationExperience({ invitation }: Props) {
   }, [weddingDate.date]);
 
   useEffect(() => {
+    if (previewMode) {
+      return;
+    }
+
     document.body.style.overflow = curtainOpen ? "" : "hidden";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [curtainOpen]);
+  }, [curtainOpen, previewMode]);
 
   async function copyText(label: string, value: string) {
     await navigator.clipboard.writeText(value);
@@ -136,7 +141,7 @@ export function InvitationExperience({ invitation }: Props) {
 
   return (
     <main className="wedding-shell min-h-screen text-stone-900">
-      {!curtainOpen ? (
+      {!curtainOpen && !previewMode ? (
         <section className="wedding-curtain fixed inset-0 z-50 flex items-center justify-center bg-[#f4efe7] px-8 text-center">
           <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/80 to-transparent" />
           <div className="absolute inset-x-8 top-8 h-px bg-gradient-to-r from-transparent via-stone-300/80 to-transparent" />

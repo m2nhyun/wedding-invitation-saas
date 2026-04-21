@@ -1,15 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { saveInvitationAssets, saveInvitationDetails, type AdminSaveState } from "@/app/admin/actions";
-import type { WeddingInvitation } from "@/lib/mock-data";
+import { InvitationExperience } from "@/components/invitation/invitation-experience";
+import type { WeddingAccount, WeddingGalleryImage, WeddingInvitation } from "@/lib/mock-data";
 
 type Props = {
   invitation: WeddingInvitation;
   canSave: boolean;
 };
 
+type AccountSlot = Omit<WeddingAccount, "side"> & {
+  side: WeddingAccount["side"] | "";
+};
+
 const initialState: AdminSaveState = {};
+const accountSlotCount = 6;
 
 function Field({
   label,
@@ -145,14 +152,236 @@ function SaveFeedback({ state }: { state: AdminSaveState }) {
   );
 }
 
+function createAccountSlots(accounts: WeddingAccount[]): AccountSlot[] {
+  return Array.from({ length: accountSlotCount }, (_, index) => accounts[index] ?? {
+    side: "",
+    role: "",
+    name: "",
+    bank: "",
+    number: "",
+  });
+}
+
+function getCompletedAccounts(accounts: ReturnType<typeof createAccountSlots>): WeddingAccount[] {
+  return accounts
+    .filter((account) => account.side && account.role && account.name && account.bank && account.number)
+    .map((account) => ({
+      side: account.side as WeddingAccount["side"],
+      role: account.role,
+      name: account.name,
+      bank: account.bank,
+      number: account.number,
+    }));
+}
+
+function PreviewFrame({ invitation }: { invitation: WeddingInvitation }) {
+  return (
+    <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-stone-950 p-2 shadow-[0_24px_60px_rgba(70,49,31,0.2)]">
+      <div className="h-[720px] overflow-y-auto rounded-[22px] bg-[#fffdf9]">
+        <InvitationExperience invitation={invitation} previewMode />
+      </div>
+    </div>
+  );
+}
+
 export function InvitationEditor({ invitation, canSave }: Props) {
   const [detailsState, detailsFormAction, detailsIsPending] = useActionState(saveInvitationDetails, initialState);
   const [assetsState, assetsFormAction, assetsIsPending] = useActionState(saveInvitationAssets, initialState);
-  const accountSlots = Array.from({ length: 6 }, (_, index) => invitation.accounts[index]);
+  const [previewInvitation, setPreviewInvitation] = useState(invitation);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const previewAccountSlots = useRef(createAccountSlots(invitation.accounts));
+  const imageObjectUrls = useRef<string[]>([]);
+  const accountSlots = useMemo(() => createAccountSlots(invitation.accounts), [invitation.accounts]);
+
+  useEffect(() => {
+    const urls = imageObjectUrls.current;
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  function createObjectUrl(file: File) {
+    const url = URL.createObjectURL(file);
+    imageObjectUrls.current.push(url);
+    return url;
+  }
+
+  function updatePreviewField(name: string, value: string) {
+    setPreviewInvitation((current) => {
+      const next: WeddingInvitation = structuredClone(current);
+
+      switch (name) {
+        case "status":
+          next.status = value === "draft" ? "draft" : "published";
+          break;
+        case "groomName":
+          next.couple.groom.name = value;
+          break;
+        case "groomNameEn":
+          next.couple.groom.nameEn = value;
+          break;
+        case "groomFather":
+          next.couple.groom.father = value;
+          break;
+        case "groomMother":
+          next.couple.groom.mother = value;
+          break;
+        case "brideName":
+          next.couple.bride.name = value;
+          break;
+        case "brideNameEn":
+          next.couple.bride.nameEn = value;
+          break;
+        case "brideFather":
+          next.couple.bride.father = value;
+          break;
+        case "brideMother":
+          next.couple.bride.mother = value;
+          break;
+        case "weddingDate":
+          next.wedding.date = value;
+          break;
+        case "weddingTime":
+          next.wedding.time = value;
+          break;
+        case "venue":
+          next.wedding.venue = value;
+          break;
+        case "hall":
+          next.wedding.hall = value;
+          break;
+        case "address":
+          next.wedding.address = value;
+          break;
+        case "tel":
+          next.wedding.tel = value;
+          break;
+        case "kakaoMapUrl":
+          next.wedding.mapLinks.kakao = value;
+          break;
+        case "naverMapUrl":
+          next.wedding.mapLinks.naver = value;
+          break;
+        case "tmapUrl":
+          next.wedding.mapLinks.tmap = value;
+          break;
+        case "introKicker":
+        case "introTitle":
+        case "invitation":
+        case "quote":
+        case "quoteBy":
+        case "storyTitle":
+        case "storyBody":
+        case "locationGuide":
+        case "accountIntro":
+        case "closing":
+          next.copy[name as keyof WeddingInvitation["copy"]] = value;
+          break;
+      }
+
+      return next;
+    });
+  }
+
+  function updatePreviewAccount(name: string, value: string) {
+    const match = name.match(/^account(Side|Role|Name|Bank|Number)(\d)$/);
+    if (!match) {
+      return false;
+    }
+
+    const [, field, slotText] = match;
+    const slot = Number(slotText) - 1;
+
+    const nextSlots = structuredClone(previewAccountSlots.current);
+    const account = nextSlots[slot];
+    if (account) {
+      if (field === "Side") account.side = value as WeddingAccount["side"] | "";
+      if (field === "Role") account.role = value;
+      if (field === "Name") account.name = value;
+      if (field === "Bank") account.bank = value;
+      if (field === "Number") account.number = value;
+    }
+
+    previewAccountSlots.current = nextSlots;
+
+    setPreviewInvitation((currentInvitation) => ({
+      ...currentInvitation,
+      accounts: getCompletedAccounts(nextSlots),
+    }));
+
+    return true;
+  }
+
+  function updatePreviewImage(name: string, file: File) {
+    const url = createObjectUrl(file);
+
+    setPreviewInvitation((current) => {
+      const next: WeddingInvitation = structuredClone(current);
+      const imageMap: Record<string, keyof WeddingInvitation["images"]> = {
+        heroFile: "hero",
+        introFile: "intro",
+        quoteFile: "quote",
+        calendarFile: "calendar",
+        closingFile: "closing",
+      };
+
+      const imageKey = imageMap[name];
+      if (imageKey) {
+        next.images[imageKey] = url;
+        return next;
+      }
+
+      const galleryMatch = name.match(/^galleryFile(\d)$/);
+      if (galleryMatch) {
+        const index = Number(galleryMatch[1]) - 1;
+        const gallery = [...next.gallery];
+        gallery[index] = {
+          src: url,
+          alt: gallery[index]?.alt ?? `웨딩 갤러리 사진 ${index + 1}`,
+        };
+        next.gallery = gallery.filter(Boolean) as WeddingGalleryImage[];
+      }
+
+      return next;
+    });
+  }
+
+  function handleFormChange(event: ChangeEvent<HTMLFormElement> | FormEvent<HTMLFormElement>) {
+    const target = event.target;
+
+    if (target instanceof HTMLInputElement && target.type === "file") {
+      const file = target.files?.[0];
+      if (file) {
+        updatePreviewImage(target.name, file);
+      }
+      return;
+    }
+
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    ) {
+      if (updatePreviewAccount(target.name, target.value)) {
+        return;
+      }
+
+      updatePreviewField(target.name, target.value);
+    }
+  }
 
   return (
-    <div className="mt-8 space-y-8">
-      <form action={detailsFormAction} className="space-y-6">
+    <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+      <div className="space-y-8">
+      <button
+        type="button"
+        onClick={() => setPreviewOpen(true)}
+        className="admin-button-secondary h-12 w-full text-sm xl:hidden"
+      >
+        미리보기
+      </button>
+
+      <form action={detailsFormAction} onChange={handleFormChange} onInput={handleFormChange} className="space-y-6">
         <input type="hidden" name="slug" value={invitation.slug} />
 
         <section className="admin-panel rounded-[18px] p-6">
@@ -229,7 +458,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
         </div>
       </form>
 
-      <form action={assetsFormAction} className="space-y-6">
+      <form action={assetsFormAction} onChange={handleFormChange} onInput={handleFormChange} className="space-y-6">
         <input type="hidden" name="slug" value={invitation.slug} />
         <section className="admin-panel rounded-[18px] p-6">
           <p className="admin-label">사진 관리</p>
@@ -298,6 +527,38 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           </button>
         </div>
       </form>
+      </div>
+
+      <aside className="sticky top-6 hidden xl:block">
+        <div className="mb-4 flex items-end justify-between">
+          <div>
+            <p className="admin-label">미리보기</p>
+            <h2 className="mt-2 font-serif text-2xl">현재 화면</h2>
+          </div>
+          <span className="admin-status-pill">저장 전 확인</span>
+        </div>
+        <PreviewFrame invitation={previewInvitation} />
+      </aside>
+
+      {previewOpen ? (
+        <div className="fixed inset-0 z-50 bg-stone-950/70 p-4 backdrop-blur-sm xl:hidden">
+          <div className="mx-auto flex h-full max-w-[430px] flex-col">
+            <div className="mb-3 flex items-center justify-between text-white">
+              <p className="font-serif text-xl">미리보기</p>
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(false)}
+                className="h-10 rounded-full bg-white/12 px-4 text-sm"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <PreviewFrame invitation={previewInvitation} />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
