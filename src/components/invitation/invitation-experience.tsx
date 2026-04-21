@@ -299,38 +299,40 @@ export function InvitationExperience({ invitation }: Props) {
           </div>
         </section>
 
-        <section className="px-7 py-20">
-          <div className="text-center">
-            <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Gallery</p>
-            <h2 className="mt-4 font-serif text-3xl">우리의 순간들</h2>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-2">
-            {invitation.gallery.slice(0, visibleGalleryCount).map((image, index) => (
+        {invitation.gallery.length > 0 ? (
+          <section className="px-7 py-20">
+            <div className="text-center">
+              <p className="font-serif text-sm uppercase tracking-[0.28em] text-stone-400">Gallery</p>
+              <h2 className="mt-4 font-serif text-3xl">우리의 순간들</h2>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-2">
+              {invitation.gallery.slice(0, visibleGalleryCount).map((image, index) => (
+                <button
+                  key={image.src}
+                  type="button"
+                  onClick={() => setActiveImage(index)}
+                  className="group aspect-square overflow-hidden bg-stone-100"
+                  aria-label={`${index + 1}번째 갤러리 사진 크게 보기`}
+                >
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </button>
+              ))}
+            </div>
+            {visibleGalleryCount < invitation.gallery.length ? (
               <button
-                key={image.src}
                 type="button"
-                onClick={() => setActiveImage(index)}
-                className="group aspect-square overflow-hidden bg-stone-100"
-                aria-label={`${index + 1}번째 갤러리 사진 크게 보기`}
+                onClick={() => setVisibleGalleryCount(invitation.gallery.length)}
+                className="mx-auto mt-8 block h-11 min-w-32 border border-stone-300 px-6 text-sm text-stone-700"
               >
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
+                더 보기
               </button>
-            ))}
-          </div>
-          {visibleGalleryCount < invitation.gallery.length ? (
-            <button
-              type="button"
-              onClick={() => setVisibleGalleryCount(invitation.gallery.length)}
-              className="mx-auto mt-8 block h-11 min-w-32 border border-stone-300 px-6 text-sm text-stone-700"
-            >
-              더 보기
-            </button>
-          ) : null}
-        </section>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className="bg-[#eee4d6] px-8 py-20">
           <div className="text-center">

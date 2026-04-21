@@ -68,11 +68,17 @@ function ImageUploadField({
   fileName,
   currentName,
   currentUrl,
+  sortName,
+  defaultSortOrder,
+  removeName,
 }: {
   label: string;
   fileName: string;
   currentName: string;
   currentUrl: string;
+  sortName?: string;
+  defaultSortOrder?: number;
+  removeName?: string;
 }) {
   return (
     <div className="border border-stone-200 bg-white p-4">
@@ -93,6 +99,48 @@ function ImageUploadField({
           className="mt-2 block w-full text-sm text-stone-600 file:mr-4 file:h-10 file:border-0 file:bg-stone-950 file:px-4 file:text-sm file:text-white"
         />
       </label>
+      {sortName ? (
+        <label className="mt-4 block">
+          <span className="text-sm font-medium text-stone-700">노출 순서</span>
+          <input
+            name={sortName}
+            type="number"
+            min="1"
+            max="8"
+            defaultValue={defaultSortOrder ?? 1}
+            className="mt-2 h-10 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+          />
+        </label>
+      ) : null}
+      {removeName && currentUrl ? (
+        <label className="mt-4 flex items-center gap-2 text-sm text-stone-700">
+          <input name={removeName} type="checkbox" className="size-4 accent-stone-950" />
+          이 갤러리 사진 삭제
+        </label>
+      ) : null}
+    </div>
+  );
+}
+
+function SaveFeedback({ state }: { state: AdminSaveState }) {
+  if (!state.error && !state.success) {
+    return null;
+  }
+
+  return (
+    <div className="mb-3 flex flex-col gap-2 text-sm md:flex-row md:items-center md:justify-between">
+      {state.error ? <p className="text-red-700">{state.error}</p> : null}
+      {state.success ? <p className="text-green-700">{state.success}</p> : null}
+      {state.previewPath ? (
+        <a
+          href={state.previewPath}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex h-9 items-center justify-center border border-stone-300 px-3 text-stone-700 transition hover:border-stone-950 hover:text-stone-950"
+        >
+          공개 페이지 확인
+        </a>
+      ) : null}
     </div>
   );
 }
@@ -170,8 +218,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
         </section>
 
         <div className="border border-stone-200 bg-white p-4 shadow-lg">
-          {detailsState.error ? <p className="mb-3 text-sm text-red-700">{detailsState.error}</p> : null}
-          {detailsState.success ? <p className="mb-3 text-sm text-green-700">{detailsState.success}</p> : null}
+          <SaveFeedback state={detailsState} />
           <button
             type="submit"
             disabled={!canSave || detailsIsPending}
@@ -205,6 +252,9 @@ export function InvitationEditor({ invitation, canSave }: Props) {
                 fileName={`galleryFile${index + 1}`}
                 currentName={`galleryCurrentUrl${index + 1}`}
                 currentUrl={invitation.gallery[index]?.src ?? ""}
+                sortName={`gallerySortOrder${index + 1}`}
+                defaultSortOrder={index + 1}
+                removeName={`galleryRemove${index + 1}`}
               />
             ))}
           </div>
@@ -238,8 +288,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
         </section>
 
         <div className="sticky bottom-4 z-10 border border-stone-200 bg-white p-4 shadow-lg">
-          {assetsState.error ? <p className="mb-3 text-sm text-red-700">{assetsState.error}</p> : null}
-          {assetsState.success ? <p className="mb-3 text-sm text-green-700">{assetsState.success}</p> : null}
+          <SaveFeedback state={assetsState} />
           <button
             type="submit"
             disabled={!canSave || assetsIsPending}

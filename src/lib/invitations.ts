@@ -117,7 +117,7 @@ export function mapInvitationRow(row: InvitationRow): WeddingInvitation {
       closing: getMediaUrl(media, "closing", fallbackImages.closing),
     },
     profiles: row.profiles,
-    gallery: gallery.length > 0 ? gallery : getPrimaryInvitation().gallery,
+    gallery,
     timeline: timeline.length > 0 ? timeline : getPrimaryInvitation().timeline,
     accounts: (row.invitation_accounts ?? [])
       .sort((a, b) => a.sort_order - b.sort_order)

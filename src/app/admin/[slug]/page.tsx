@@ -76,8 +76,8 @@ export default async function AdminInvitationPage({ params }: PageProps) {
           <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-7 text-stone-300">
             <li>생성된 초대장의 관리자 코드를 재발급하는 안전한 복구 플로우를 추가합니다.</li>
             <li>계좌번호 편집 UI를 별도 반복 form으로 분리합니다.</li>
-            <li>갤러리 순서 변경과 삭제 기능을 붙입니다.</li>
-            <li>저장 후 공개 페이지 미리보기를 더 빠르게 확인할 수 있게 합니다.</li>
+            <li>타임라인 섹션의 문구와 이미지를 admin에서 편집할 수 있게 합니다.</li>
+            <li>공개 페이지의 세부 모션과 섹션 간 여백을 레퍼런스 수준으로 다듬습니다.</li>
           </ol>
         </section>
       </section>

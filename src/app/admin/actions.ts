@@ -22,6 +22,7 @@ export type AdminLoginState = {
 export type AdminSaveState = {
   error?: string;
   success?: string;
+  previewPath?: string;
 };
 
 export type AdminCreateInvitationState = {
@@ -240,6 +241,7 @@ export async function saveInvitationDetails(
 
   return {
     success: "저장되었습니다.",
+    previewPath: `/w/${slug}`,
   };
 }
 
@@ -569,6 +571,15 @@ function getOptionalFormValue(formData: FormData, key: string) {
   return value.length > 0 ? value : undefined;
 }
 
+function getBooleanFormValue(formData: FormData, key: string) {
+  return formData.get(key) === "on";
+}
+
+function getSortOrderFormValue(formData: FormData, key: string, fallback: number) {
+  const value = Number(getOptionalFormValue(formData, key));
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
+
 export async function saveInvitationAssets(
   _previousState: AdminSaveState,
   formData: FormData,
@@ -604,6 +615,8 @@ export async function saveInvitationAssets(
     currentKey: string;
     alt: string;
     sortOrder: number;
+    sortOrderKey?: string;
+    removeKey?: string;
   }> = [
     { type: "hero", fileKey: "heroFile", currentKey: "heroCurrentUrl", alt: "히어로 이미지", sortOrder: 0 },
     { type: "intro", fileKey: "introFile", currentKey: "introCurrentUrl", alt: "인트로 이미지", sortOrder: 0 },
@@ -628,20 +641,29 @@ export async function saveInvitationAssets(
       currentKey: `galleryCurrentUrl${index + 1}`,
       alt: `웨딩 갤러리 사진 ${index + 1}`,
       sortOrder: index + 1,
+      sortOrderKey: `gallerySortOrder${index + 1}`,
+      removeKey: `galleryRemove${index + 1}`,
     })),
   ];
 
   const mediaRows = (
     await Promise.all(
-      mediaInputs.map(async ({ type, fileKey, currentKey, alt, sortOrder }) => {
+      mediaInputs.map(async ({ type, fileKey, currentKey, alt, sortOrder, sortOrderKey, removeKey }) => {
         const file = formData.get(fileKey);
         const currentUrl = getOptionalFormValue(formData, currentKey);
+        const hasNewFile = file instanceof File && file.size > 0;
+        const shouldRemove = removeKey ? getBooleanFormValue(formData, removeKey) : false;
+        const resolvedSortOrder = sortOrderKey ? getSortOrderFormValue(formData, sortOrderKey, sortOrder) : sortOrder;
         let publicUrl = currentUrl;
-        let storagePath = currentUrl?.startsWith("http") ? `external/${type}-${sortOrder}.jpg` : currentUrl;
+        let storagePath = currentUrl?.startsWith("http") ? `external/${type}-${resolvedSortOrder}.jpg` : currentUrl;
 
-        if (file instanceof File && file.size > 0) {
+        if (shouldRemove && !hasNewFile) {
+          return undefined;
+        }
+
+        if (hasNewFile) {
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-          storagePath = `invitations/${invitation.id}/${type}/${Date.now()}-${sortOrder}-${safeName}`;
+          storagePath = `invitations/${invitation.id}/${type}/${Date.now()}-${resolvedSortOrder}-${safeName}`;
           const { error: uploadError } = await supabase.storage
             .from("wedding-media")
             .upload(storagePath, file, {
@@ -666,7 +688,7 @@ export async function saveInvitationAssets(
           public_url: publicUrl,
           storage_path: storagePath,
           alt,
-          sort_order: sortOrder,
+          sort_order: resolvedSortOrder,
         };
       }),
     )
@@ -742,5 +764,6 @@ export async function saveInvitationAssets(
 
   return {
     success: "이미지와 계좌 정보가 저장되었습니다.",
+    previewPath: `/w/${slug}`,
   };
 }
