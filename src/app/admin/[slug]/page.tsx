@@ -27,11 +27,12 @@ export default async function AdminInvitationPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4efe7] px-5 py-6 text-stone-950">
+    <main className="admin-shell px-5 py-6">
       <section className="mx-auto max-w-6xl">
-        <header className="flex flex-col gap-5 border-b border-stone-300 pb-6 md:flex-row md:items-end md:justify-between">
+        <header className="admin-panel rounded-[18px] p-6 md:p-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="font-serif text-sm uppercase tracking-[0.3em] text-stone-500">Admin Dashboard</p>
+            <p className="admin-label">Admin Dashboard</p>
             <h1 className="mt-4 font-serif text-4xl leading-tight md:text-5xl">
               {invitation.couple.groom.name} & {invitation.couple.bride.name}
             </h1>
@@ -42,38 +43,39 @@ export default async function AdminInvitationPage({ params }: PageProps) {
           <div className="flex gap-2">
             <Link
               href={`/w/${invitation.slug}`}
-              className="inline-flex h-11 items-center border border-stone-300 bg-white px-4 text-sm"
+              className="admin-button-secondary h-11 px-4 text-sm"
             >
               공개 페이지
             </Link>
             <form action={logoutAdmin}>
-              <button type="submit" className="h-11 bg-stone-950 px-4 text-sm text-white">
+              <button type="submit" className="admin-button-primary h-11 px-4 text-sm">
                 로그아웃
               </button>
             </form>
           </div>
+          </div>
         </header>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <article className="bg-white p-5 shadow-sm">
+          <article className="admin-panel-muted rounded-[14px] p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Publish</p>
-            <p className="mt-3 font-serif text-3xl">{invitation.status === "published" ? "공개 중" : "작성 중"}</p>
+            <p className="mt-3 font-serif text-2xl md:text-3xl">{invitation.status === "published" ? "공개 중" : "작성 중"}</p>
           </article>
-          <article className="bg-white p-5 shadow-sm">
+          <article className="admin-panel-muted rounded-[14px] p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Supabase</p>
-            <p className="mt-3 font-serif text-3xl">{supabaseReady ? "연결 준비됨" : "env 필요"}</p>
+            <p className="mt-3 font-serif text-2xl md:text-3xl">{supabaseReady ? "연결 준비됨" : "env 필요"}</p>
           </article>
-          <article className="bg-white p-5 shadow-sm">
+          <article className="admin-panel-muted rounded-[14px] p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Storage</p>
-            <p className="mt-3 font-serif text-3xl">wedding-media</p>
+            <p className="mt-3 font-mono text-xl md:text-2xl">wedding-media</p>
           </article>
         </div>
 
         <InvitationEditor invitation={invitation} canSave={supabaseReady} />
 
-        <section className="mt-8 bg-stone-950 p-6 text-white">
+        <section className="admin-panel mt-8 rounded-[18px] p-6">
           <p className="font-serif text-2xl">다음 구현 순서</p>
-          <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-7 text-stone-300">
+          <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-7 text-stone-600">
             <li>생성된 초대장의 관리자 코드를 재발급하는 안전한 복구 플로우를 추가합니다.</li>
             <li>계좌번호 편집 UI를 별도 반복 form으로 분리합니다.</li>
             <li>타임라인 섹션의 문구와 이미지를 admin에서 편집할 수 있게 합니다.</li>

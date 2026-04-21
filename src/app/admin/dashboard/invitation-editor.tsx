@@ -32,7 +32,7 @@ function Field({
         type={type}
         defaultValue={defaultValue}
         required={required}
-        className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+        className="admin-input mt-2 h-11 w-full px-3 text-sm"
       />
     </label>
   );
@@ -57,7 +57,7 @@ function TextArea({
         defaultValue={defaultValue}
         rows={rows}
         required
-        className="mt-2 w-full resize-y border border-stone-300 bg-white px-3 py-3 text-sm leading-6 outline-none transition focus:border-stone-950"
+        className="admin-input mt-2 w-full resize-y px-3 py-3 text-sm leading-6"
       />
     </label>
   );
@@ -81,9 +81,9 @@ function ImageUploadField({
   removeName?: string;
 }) {
   return (
-    <div className="border border-stone-200 bg-white p-4">
+    <div className="admin-panel-muted rounded-[14px] p-4">
       <input type="hidden" name={currentName} value={currentUrl} />
-      <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+      <div className="aspect-[4/3] overflow-hidden rounded-[10px] bg-stone-100">
         {currentUrl ? (
           <img src={currentUrl} alt={label} className="h-full w-full object-cover" />
         ) : (
@@ -96,7 +96,7 @@ function ImageUploadField({
           name={fileName}
           type="file"
           accept="image/*"
-          className="mt-2 block w-full text-sm text-stone-600 file:mr-4 file:h-10 file:border-0 file:bg-stone-950 file:px-4 file:text-sm file:text-white"
+          className="mt-2 block w-full text-sm text-stone-600 file:mr-4 file:h-10 file:rounded-full file:border-0 file:bg-[#3d352c] file:px-4 file:text-sm file:text-white"
         />
       </label>
       {sortName ? (
@@ -108,7 +108,7 @@ function ImageUploadField({
             min="1"
             max="8"
             defaultValue={defaultSortOrder ?? 1}
-            className="mt-2 h-10 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+            className="admin-input mt-2 h-10 w-full px-3 text-sm"
           />
         </label>
       ) : null}
@@ -136,7 +136,7 @@ function SaveFeedback({ state }: { state: AdminSaveState }) {
           href={state.previewPath}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex h-9 items-center justify-center border border-stone-300 px-3 text-stone-700 transition hover:border-stone-950 hover:text-stone-950"
+          className="admin-button-secondary h-9 px-3 text-stone-700"
         >
           공개 페이지 확인
         </a>
@@ -155,10 +155,10 @@ export function InvitationEditor({ invitation, canSave }: Props) {
       <form action={detailsFormAction} className="space-y-6">
         <input type="hidden" name="slug" value={invitation.slug} />
 
-        <section className="border border-stone-200 bg-[#fffdf9] p-6">
+        <section className="admin-panel rounded-[18px] p-6">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Editor</p>
+              <p className="admin-label">Editor</p>
               <h2 className="mt-3 font-serif text-3xl">초대장 정보 편집</h2>
             </div>
             <label className="block min-w-40">
@@ -166,7 +166,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
               <select
                 name="status"
                 defaultValue={invitation.status}
-                className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none"
+                className="admin-input mt-2 h-11 w-full px-3 text-sm"
               >
                 <option value="published">공개</option>
                 <option value="draft">비공개</option>
@@ -186,7 +186,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           </div>
         </section>
 
-        <section className="border border-stone-200 bg-[#fffdf9] p-6">
+        <section className="admin-panel rounded-[18px] p-6">
           <h2 className="font-serif text-3xl">예식 정보</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Field label="예식 날짜" name="weddingDate" type="date" defaultValue={invitation.wedding.date} />
@@ -201,7 +201,7 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           </div>
         </section>
 
-        <section className="border border-stone-200 bg-[#fffdf9] p-6">
+        <section className="admin-panel rounded-[18px] p-6">
           <h2 className="font-serif text-3xl">문구</h2>
           <div className="mt-6 grid gap-4">
             <Field label="히어로 상단 문구" name="introKicker" defaultValue={invitation.copy.introKicker} />
@@ -217,12 +217,12 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           </div>
         </section>
 
-        <div className="border border-stone-200 bg-white p-4 shadow-lg">
+        <div className="admin-panel sticky bottom-4 z-10 rounded-[18px] p-3 md:p-4">
           <SaveFeedback state={detailsState} />
           <button
             type="submit"
             disabled={!canSave || detailsIsPending}
-            className="h-12 w-full bg-stone-950 text-sm font-medium tracking-[0.16em] text-white disabled:cursor-not-allowed disabled:bg-stone-400"
+            className="admin-button-primary h-12 w-full text-sm font-medium tracking-[0.16em] disabled:cursor-not-allowed disabled:bg-stone-400"
           >
             {detailsIsPending ? "저장 중" : canSave ? "기본 정보 저장" : "Supabase env 필요"}
           </button>
@@ -231,8 +231,8 @@ export function InvitationEditor({ invitation, canSave }: Props) {
 
       <form action={assetsFormAction} className="space-y-6">
         <input type="hidden" name="slug" value={invitation.slug} />
-        <section className="border border-stone-200 bg-[#fffdf9] p-6">
-          <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Media</p>
+        <section className="admin-panel rounded-[18px] p-6">
+          <p className="admin-label">Media</p>
           <h2 className="mt-3 font-serif text-3xl">이미지 업로드 관리</h2>
           <p className="mt-4 text-sm leading-7 text-stone-600">
             업로드한 이미지는 Supabase Storage의 `wedding-media` bucket에 저장되고 공개 페이지에 즉시 반영됩니다.
@@ -260,18 +260,18 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           </div>
         </section>
 
-        <section className="border border-stone-200 bg-[#fffdf9] p-6">
-          <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Accounts</p>
+        <section className="admin-panel rounded-[18px] p-6">
+          <p className="admin-label">Accounts</p>
           <h2 className="mt-3 font-serif text-3xl">계좌 정보</h2>
           <div className="mt-6 space-y-5">
             {accountSlots.map((account, index) => (
-              <div key={index} className="grid gap-3 border border-stone-200 bg-white p-4 md:grid-cols-[120px_1fr_1fr_1fr_1fr]">
+              <div key={index} className="admin-panel-muted grid gap-3 rounded-[14px] p-4 md:grid-cols-[120px_1fr_1fr_1fr_1fr]">
                 <label className="block">
                   <span className="text-sm font-medium text-stone-700">구분</span>
                   <select
                     name={`accountSide${index + 1}`}
                     defaultValue={account?.side ?? ""}
-                    className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none"
+                    className="admin-input mt-2 h-11 w-full px-3 text-sm"
                   >
                     <option value="">비움</option>
                     <option value="groom">신랑측</option>
@@ -287,12 +287,12 @@ export function InvitationEditor({ invitation, canSave }: Props) {
           </div>
         </section>
 
-        <div className="sticky bottom-4 z-10 border border-stone-200 bg-white p-4 shadow-lg">
+        <div className="admin-panel sticky bottom-4 z-10 rounded-[18px] p-3 md:p-4">
           <SaveFeedback state={assetsState} />
           <button
             type="submit"
             disabled={!canSave || assetsIsPending}
-            className="h-12 w-full bg-stone-950 text-sm font-medium tracking-[0.16em] text-white disabled:cursor-not-allowed disabled:bg-stone-400"
+            className="admin-button-primary h-12 w-full text-sm font-medium tracking-[0.16em] disabled:cursor-not-allowed disabled:bg-stone-400"
           >
             {assetsIsPending ? "저장 중" : canSave ? "이미지/계좌 저장" : "Supabase env 필요"}
           </button>

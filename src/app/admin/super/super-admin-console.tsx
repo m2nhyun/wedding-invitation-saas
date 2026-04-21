@@ -66,10 +66,10 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
 
   return (
     <div className="mt-8 space-y-8">
-      <section className="border border-stone-200 bg-[#fffdf9] p-6">
+      <section className="admin-panel rounded-[18px] p-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Create</p>
+            <p className="admin-label">Create</p>
             <h2 className="mt-3 font-serif text-3xl">슈퍼 관리자 생성</h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
               기존 초대장을 템플릿으로 복제해서 새 초대장을 만듭니다. 생성된 초대장은 비공개 상태로 시작합니다.
@@ -83,7 +83,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
             <select
               name="sourceSlug"
               required
-              className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none"
+              className="admin-input mt-2 h-11 w-full px-3 text-sm"
             >
               {invitations.map((invitation) => (
                 <option key={invitation.slug} value={invitation.slug}>
@@ -100,7 +100,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
               required
               minLength={3}
               pattern="[A-Za-z0-9-]+"
-              className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+              className="admin-input mt-2 h-11 w-full px-3 text-sm"
             />
           </label>
           <label className="block">
@@ -108,7 +108,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
             <input
               name="newGroomName"
               required
-              className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+              className="admin-input mt-2 h-11 w-full px-3 text-sm"
             />
           </label>
           <label className="block">
@@ -116,7 +116,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
             <input
               name="newBrideName"
               required
-              className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+              className="admin-input mt-2 h-11 w-full px-3 text-sm"
             />
           </label>
           <label className="block">
@@ -125,13 +125,13 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
               name="newWeddingDate"
               type="date"
               required
-              className="mt-2 h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none transition focus:border-stone-950"
+              className="admin-input mt-2 h-11 w-full px-3 text-sm"
             />
           </label>
           <button
             type="submit"
             disabled={createIsPending || invitations.length === 0}
-            className="h-11 bg-stone-950 px-5 text-sm font-medium tracking-[0.14em] text-white disabled:cursor-not-allowed disabled:bg-stone-400"
+            className="admin-button-primary h-11 px-5 text-sm font-medium tracking-[0.14em] disabled:cursor-not-allowed disabled:bg-stone-400"
           >
             {createIsPending ? "생성 중" : "생성"}
           </button>
@@ -139,7 +139,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
 
         {createState.error ? <p className="mt-4 text-sm text-red-700">{createState.error}</p> : null}
         {createState.success && createState.slug && createState.adminCode ? (
-          <div className="mt-5 border border-green-200 bg-green-50 p-4 text-sm leading-7 text-green-950">
+          <div className="mt-5 rounded-[14px] border border-green-200 bg-green-50/80 p-4 text-sm leading-7 text-green-950">
             <p className="font-medium">{createState.success}</p>
             <p>
               공개 페이지: <span className="font-mono">/w/{createState.slug}</span>
@@ -155,10 +155,10 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
         ) : null}
       </section>
 
-      <section className="border border-stone-200 bg-[#fffdf9] p-6">
+      <section className="admin-panel rounded-[18px] p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Invitations</p>
+          <p className="admin-label">Invitations</p>
           <h2 className="mt-3 font-serif text-3xl">초대장 운영 목록</h2>
         </div>
         <p className="text-sm text-stone-500">총 {invitations.length}개</p>
@@ -167,7 +167,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
       {resetState.error ? <p className="mt-5 text-sm text-red-700">{resetState.error}</p> : null}
       {statusState.error ? <p className="mt-5 text-sm text-red-700">{statusState.error}</p> : null}
       {statusState.success && statusState.slug ? (
-        <div className="mt-5 border border-blue-200 bg-blue-50 p-4 text-sm leading-7 text-blue-950">
+        <div className="mt-5 rounded-[14px] border border-blue-200 bg-blue-50/80 p-4 text-sm leading-7 text-blue-950">
           <p className="font-medium">{statusState.success}</p>
           <p>
             대상: <span className="font-mono">/w/{statusState.slug}</span>
@@ -175,7 +175,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
         </div>
       ) : null}
       {resetState.success && resetState.slug && resetState.adminCode ? (
-        <div className="mt-5 border border-green-200 bg-green-50 p-4 text-sm leading-7 text-green-950">
+        <div className="mt-5 rounded-[14px] border border-green-200 bg-green-50/80 p-4 text-sm leading-7 text-green-950">
           <p className="font-medium">{resetState.success}</p>
           <p>
             대상: <span className="font-mono">/admin/{resetState.slug}</span>
@@ -209,7 +209,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
                 </td>
                 <td className="py-4 pr-4">{invitation.wedding_date}</td>
                 <td className="py-4 pr-4">
-                  <span className="border border-stone-200 bg-white px-2 py-1 text-xs">
+                  <span className="admin-status-pill">
                     {invitation.status === "published" ? "공개" : "비공개"}
                   </span>
                 </td>
@@ -224,7 +224,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
                     <button
                       type="submit"
                       disabled={statusIsPending}
-                      className="h-10 border border-stone-300 bg-white px-3 text-xs disabled:cursor-not-allowed disabled:text-stone-400"
+                      className="admin-button-secondary h-10 px-3 text-xs disabled:cursor-not-allowed disabled:text-stone-400"
                     >
                       {invitation.status === "published" ? "비공개 전환" : "공개 전환"}
                     </button>
@@ -232,10 +232,10 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
                 </td>
                 <td className="py-4 pr-4">
                   <div className="flex gap-2">
-                    <a className="border border-stone-300 bg-white px-3 py-2 text-xs" href={`/w/${invitation.slug}`}>
+                    <a className="admin-button-secondary px-3 py-2 text-xs" href={`/w/${invitation.slug}`}>
                       공개
                     </a>
-                    <a className="border border-stone-300 bg-white px-3 py-2 text-xs" href={`/admin/${invitation.slug}`}>
+                    <a className="admin-button-secondary px-3 py-2 text-xs" href={`/admin/${invitation.slug}`}>
                       관리
                     </a>
                   </div>
@@ -246,7 +246,7 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
                     <button
                       type="submit"
                       disabled={resetIsPending}
-                      className="h-10 bg-stone-950 px-4 text-xs font-medium tracking-[0.12em] text-white disabled:bg-stone-400"
+                      className="admin-button-primary h-10 px-4 text-xs font-medium tracking-[0.12em] disabled:bg-stone-400"
                     >
                       재발급
                     </button>
@@ -259,10 +259,10 @@ export function SuperAdminConsole({ auditLogs, invitations }: Props) {
       </div>
       </section>
 
-      <section className="border border-stone-200 bg-[#fffdf9] p-6">
+      <section className="admin-panel rounded-[18px] p-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="font-serif text-sm uppercase tracking-[0.25em] text-stone-400">Audit</p>
+            <p className="admin-label">Audit</p>
             <h2 className="mt-3 font-serif text-3xl">최근 운영 로그</h2>
           </div>
           <p className="text-sm text-stone-500">최근 {auditLogs.length}건</p>

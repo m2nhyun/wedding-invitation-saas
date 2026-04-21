@@ -17,7 +17,7 @@ export function SuperAdminLoginForm() {
           type="email"
           required
           autoComplete="username"
-          className="mt-2 h-12 w-full border border-stone-300 bg-white px-4 text-sm outline-none transition focus:border-stone-950"
+          className="admin-input mt-2 h-12 w-full px-4 text-sm"
         />
       </label>
       <label className="block">
@@ -27,14 +27,14 @@ export function SuperAdminLoginForm() {
           type="password"
           required
           autoComplete="current-password"
-          className="mt-2 h-12 w-full border border-stone-300 bg-white px-4 text-sm outline-none transition focus:border-stone-950"
+          className="admin-input mt-2 h-12 w-full px-4 text-sm"
         />
       </label>
       {state.error ? <p className="text-sm text-red-700">{state.error}</p> : null}
       <button
         type="submit"
         disabled={isPending}
-        className="h-12 w-full bg-stone-950 text-sm font-medium tracking-[0.16em] text-white disabled:cursor-not-allowed disabled:bg-stone-400"
+        className="admin-button-primary h-12 w-full text-sm font-medium tracking-[0.16em] disabled:cursor-not-allowed disabled:bg-stone-400"
       >
         {isPending ? "확인 중" : "슈퍼 관리자 로그인"}
       </button>
